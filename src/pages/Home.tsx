@@ -1,86 +1,104 @@
 import Hero from "../components/Hero"
 import StatsCounter from "../components/StatsCounter"
 import FeaturedEvent from "../components/FeaturedEvent"
-import GreenLottie from "../components/GreenLottie"
+import ImpactSection from "../components/ImpactSection"
 import { Link } from "react-router-dom"
 import { motion } from "framer-motion"
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 30 },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.6 }, // Remove 'ease' for compatibility
+  },
+}
 
 const Home = () => {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 40 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.7, ease: "easeOut" }}
+      initial="hidden"
+      animate="show"
+      variants={{
+        show: { transition: { staggerChildren: 0.1 } },
+        hidden: {},
+      }}
     >
       <Hero />
 
       {/* Mission + Stats */}
-      <section className="max-w-5xl mx-auto px-6 py-16 text-center">
-        <h2 className="text-4xl font-extrabold mb-6 text-green-700">Together, We’re Growing a Greener Future 🌍</h2>
-        <p className="text-gray-700 mb-8 text-lg">
-          SEWA Green Team is a youth-powered environmental force reshaping communities through cleanups, awareness, and action.
+      <motion.section
+        className="max-w-5xl mx-auto px-6 py-20 text-center"
+        variants={fadeUp}
+      >
+        <h2 className="text-4xl font-extrabold mb-6 text-green-700 leading-tight">
+          Together, We’re Growing a Greener Future 🌍
+        </h2>
+        <p className="text-gray-700 mb-10 text-lg max-w-3xl mx-auto">
+          SEWA Green Team is a youth-powered environmental force reshaping communities through cleanups, education, and green action.
         </p>
-        <StatsCounter />
-      </section>
+        <StatsCounter volunteers={150} trash={3200} events={24} />
+      </motion.section>
 
       {/* Featured Event Section */}
-      <section className="bg-green-50 py-20 px-6">
+      <motion.section
+        className="bg-green-50 py-20 px-6"
+        variants={fadeUp}
+      >
         <div className="max-w-5xl mx-auto text-center">
           <h2 className="text-3xl font-bold text-green-700 mb-4">🌱 Recent Impact</h2>
           <p className="text-gray-600 mb-8">
-            Explore what we've been up to. These aren’t just events — they’re movements.
+            These aren’t just events — they’re movements creating lasting change.
           </p>
           <FeaturedEvent />
           <Link
             to="/initiatives"
-            className="inline-block mt-6 bg-green-600 text-white px-6 py-3 rounded-full hover:bg-green-700 transition"
+            className="inline-block mt-8 bg-green-600 text-white px-6 py-3 rounded-full hover:bg-green-700 transition shadow-lg hover:scale-105"
           >
             See All Initiatives →
           </Link>
         </div>
-      </section>
+      </motion.section>
 
-      {/* Visual Animation + Call to Action */}
-      <section className="py-20 px-6 bg-white text-center">
-        <h2 className="text-3xl font-bold text-green-700 mb-6">The Movement is Growing 🌿</h2>
-        <p className="text-gray-700 max-w-2xl mx-auto mb-10">
-          Whether you’re a student, parent, or organization — there’s a role for you to play in protecting our planet.
-        </p>
-        <GreenLottie />
-        <Link
-          to="/get-involved"
-          className="mt-8 inline-block bg-green-600 text-white px-6 py-3 rounded-full hover:bg-green-700 transition"
-        >
-          Join the Team →
-        </Link>
-      </section>
+      {/* Lottie + CTA */}
+      <ImpactSection />
 
-      {/* CTA Grid to Drive Clicks */}
-      <section className="bg-gray-100 py-20 px-6">
+      {/* CTA Grid Cards */}
+      <motion.section
+        className="bg-gray-100 py-24 px-6"
+        variants={fadeUp}
+      >
         <div className="max-w-6xl mx-auto grid sm:grid-cols-2 lg:grid-cols-3 gap-8 text-center">
-          <Link
-            to="/about"
-            className="bg-white p-6 rounded-xl shadow hover:shadow-lg hover:scale-105 transition border-t-4 border-green-500"
-          >
-            <h3 className="text-xl font-bold text-green-700 mb-2">Who We Are</h3>
-            <p className="text-gray-600">Learn about our mission, team, and values.</p>
-          </Link>
-          <Link
-            to="/initiatives"
-            className="bg-white p-6 rounded-xl shadow hover:shadow-lg hover:scale-105 transition border-t-4 border-green-500"
-          >
-            <h3 className="text-xl font-bold text-green-700 mb-2">What We Do</h3>
-            <p className="text-gray-600">Explore our cleanups and sustainability programs.</p>
-          </Link>
-          <Link
-            to="/contact"
-            className="bg-white p-6 rounded-xl shadow hover:shadow-lg hover:scale-105 transition border-t-4 border-green-500"
-          >
-            <h3 className="text-xl font-bold text-green-700 mb-2">Partner With Us</h3>
-            <p className="text-gray-600">Want to collaborate? Let’s make it happen.</p>
-          </Link>
+          {[
+            {
+              name: "Who We Are",
+              desc: "Learn about our mission, team, and values.",
+              to: "/about",
+            },
+            {
+              name: "What We Do",
+              desc: "Explore our cleanups and sustainability programs.",
+              to: "/initiatives",
+            },
+            {
+              name: "Partner With Us",
+              desc: "Want to collaborate? Let’s make it happen.",
+              to: "/contact",
+            },
+          ].map((card) => (
+            <motion.div
+              key={card.to}
+              className="bg-white p-6 rounded-xl shadow-md hover:shadow-xl hover:scale-[1.03] transition-all border-t-4 border-green-500"
+              variants={fadeUp}
+            >
+              <Link to={card.to}>
+                <h3 className="text-xl font-bold text-green-700 mb-2">{card.name}</h3>
+                <p className="text-gray-600">{card.desc}</p>
+              </Link>
+            </motion.div>
+          ))}
         </div>
-      </section>
+      </motion.section>
     </motion.div>
   )
 }

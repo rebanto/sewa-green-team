@@ -3,7 +3,6 @@ import { Link } from "react-router-dom"
 import { motion } from "framer-motion"
 import Typed from "typed.js"
 import { ChevronDown } from "lucide-react"
-import HeroCanvas from "./HeroCanvas"
 
 const Hero = () => {
   const typedRef = useRef<HTMLSpanElement>(null)
@@ -33,11 +32,6 @@ const Hero = () => {
       className="relative min-h-screen h-screen bg-cover bg-center bg-no-repeat flex items-center justify-center overflow-hidden"
       style={{ backgroundImage: "url('/hero_bg.jpg')" }}
     >
-      {/* 3D Background */}
-      <div className="absolute inset-0 z-0">
-        <HeroCanvas />
-      </div>
-
       {/* Overlay */}
       <div className="absolute inset-0 bg-gradient-to-br from-black/60 via-black/40 to-black/60 z-0" />
 
