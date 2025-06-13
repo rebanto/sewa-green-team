@@ -1,1 +1,6 @@
 @import "tailwindcss";
+
+/* Allow text selection and force default cursor only for text elements, not for buttons, inputs, or interactive elements */
+h1, h2, h3, h4, h5, h6, p, span, div, li, ul, ol, label {
+  cursor: default;
+}

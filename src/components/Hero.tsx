@@ -55,7 +55,7 @@ const Hero = () => {
           <h1 className="text-5xl sm:text-6xl font-extrabold text-white mb-4 drop-shadow-md leading-tight">
             SEWA Green Team
           </h1>
-          <p className="text-2xl sm:text-3xl font-medium text-green-300 mb-8 h-[40px]">
+          <p className="text-2xl sm:text-3xl font-medium text-green-300 mb-8 h-[40px] select-none cursor-default">
             <span ref={typedRef} />
           </p>
 
@@ -67,7 +67,7 @@ const Hero = () => {
             >
               <Link
                 to="/get-involved"
-                className="bg-green-600 hover:bg-green-700 px-6 py-3 rounded-full font-semibold text-white transition duration-300 shadow-md"
+                className="bg-green-600 hover:bg-green-700 px-6 py-3 rounded-full font-semibold text-white transition duration-300 shadow-md hover:shadow-lg hover:shadow-green-400/40 focus:outline-none focus:ring-2 focus:ring-green-300/50"
               >
                 Volunteer Now →
               </Link>
@@ -78,7 +78,7 @@ const Hero = () => {
             >
               <Link
                 to="/initiatives"
-                className="border border-white/30 bg-white/10 hover:bg-white/20 px-6 py-3 rounded-full text-white font-semibold backdrop-blur-sm transition"
+                className="border border-white/30 bg-white/10 hover:bg-white/20 px-6 py-3 rounded-full text-white font-semibold backdrop-blur-sm transition shadow-md hover:shadow-lg hover:shadow-white/30 focus:outline-none focus:ring-2 focus:ring-white/40"
               >
                 Our Projects →
               </Link>
@@ -89,11 +89,15 @@ const Hero = () => {
 
       {/* Scroll Chevron */}
       <motion.div
-        animate={{ y: [0, 8, 0] }}
-        transition={{ repeat: Infinity, duration: 2 }}
-        className="absolute bottom-10 text-white z-10"
+        animate={{ y: [0, 14, 0] }}
+        transition={{ repeat: Infinity, duration: 1.3 }}
+        className="absolute bottom-10 left-1/2 -translate-x-1/2 z-10"
       >
-        <ChevronDown size={32} className="opacity-70" />
+        <div className="flex items-center justify-center">
+          <div className="backdrop-blur-md bg-white/20 rounded-full p-2 border border-white/30 shadow-lg">
+            <ChevronDown size={38} className="text-green-500 drop-shadow-md transition-transform duration-300 hover:scale-115" />
+          </div>
+        </div>
       </motion.div>
     </motion.div>
   )
