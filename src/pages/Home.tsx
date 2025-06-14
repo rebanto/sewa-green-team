@@ -4,6 +4,8 @@ import FeaturedEvent from "../components/FeaturedEvent"
 import ImpactSection from "../components/ImpactSection"
 import { Link } from "react-router-dom"
 import { motion } from "framer-motion"
+import InfoSection from "../components/InfoSection"
+import InfoImpactSection from "../components/InfoImpactSection"
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
@@ -37,6 +39,14 @@ const Home = () => {
         <p className="text-gray-700 mb-10 text-lg max-w-3xl mx-auto">
           SEWA Green Team is a youth-powered environmental force reshaping communities through cleanups, education, and green action.
         </p>
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8">
+          <Link
+            to="/about"
+            className="inline-block bg-green-100 text-green-800 font-semibold px-6 py-3 rounded-full border border-green-300 hover:bg-green-200 hover:text-green-900 transition shadow-sm"
+          >
+            Learn More About Us
+          </Link>
+        </div>
         <StatsCounter volunteers={150} trash={3200} events={24} />
       </motion.section>
 
@@ -60,45 +70,8 @@ const Home = () => {
         </div>
       </motion.section>
 
-      {/* Lottie + CTA */}
-      <ImpactSection />
-
-      {/* CTA Grid Cards */}
-      <motion.section
-        className="bg-gray-100 py-24 px-6"
-        variants={fadeUp}
-      >
-        <div className="max-w-6xl mx-auto grid sm:grid-cols-2 lg:grid-cols-3 gap-8 text-center">
-          {[
-            {
-              name: "Who We Are",
-              desc: "Learn about our mission, team, and values.",
-              to: "/about",
-            },
-            {
-              name: "What We Do",
-              desc: "Explore our cleanups and sustainability programs.",
-              to: "/initiatives",
-            },
-            {
-              name: "Partner With Us",
-              desc: "Want to collaborate? Let’s make it happen.",
-              to: "/contact",
-            },
-          ].map((card) => (
-            <motion.div
-              key={card.to}
-              className="bg-white p-6 rounded-xl shadow-md hover:shadow-xl hover:scale-[1.03] transition-all border-t-4 border-green-500"
-              variants={fadeUp}
-            >
-              <Link to={card.to}>
-                <h3 className="text-xl font-bold text-green-700 mb-2">{card.name}</h3>
-                <p className="text-gray-600">{card.desc}</p>
-              </Link>
-            </motion.div>
-          ))}
-        </div>
-      </motion.section>
+      <InfoImpactSection />
+      
     </motion.div>
   )
 }
