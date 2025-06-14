@@ -68,7 +68,7 @@ const About = () => {
           className="text-5xl font-extrabold text-green-700 mb-6"
           variants={fadeUp}
         >
-          Our Story
+          About Us
         </motion.h1>
         <motion.p
           className="text-lg text-gray-700 max-w-2xl mx-auto"
