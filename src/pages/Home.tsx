@@ -1,10 +1,8 @@
 import Hero from "../components/Hero"
 import StatsCounter from "../components/StatsCounter"
 import FeaturedEvent from "../components/FeaturedEvent"
-import ImpactSection from "../components/ImpactSection"
 import { Link } from "react-router-dom"
 import { motion } from "framer-motion"
-import InfoSection from "../components/InfoSection"
 import InfoImpactSection from "../components/InfoImpactSection"
 
 const fadeUp = {
