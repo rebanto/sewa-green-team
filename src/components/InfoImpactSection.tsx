@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { useRef, useMemo } from 'react';
+import { useRef, useMemo, useEffect, useState } from 'react';
 import * as THREE from 'three';
 import { FaLeaf, FaHandsHelping, FaGlobeAmericas } from 'react-icons/fa';
 
@@ -44,9 +44,15 @@ function Leaf({ index, total }: { index: number; total: number }) {
   const angleOffset = useMemo(() => Math.random() * Math.PI * 2, []);
   const radiusOffset = useMemo(() => Math.random() * 0.8, []);
 
+  // Reduce animation complexity: throttle updates
+  const lastUpdate = useRef(0);
   useFrame(({ clock }) => {
     if (!mesh.current) return;
     const t = clock.getElapsedTime();
+    // Only update every ~2 frames
+    if (t - lastUpdate.current < 0.033) return;
+    lastUpdate.current = t;
+
     const angle = (index / total) * Math.PI * 2 + t * speed + angleOffset;
     const radius = baseRadius + radiusOffset + radiusVariation * Math.sin(t * swirlFrequency + phase + index);
     const x = Math.cos(angle) * radius * 1.35;
@@ -83,7 +89,7 @@ function LeafCluster() {
     group.current.rotation.x = Math.sin(t / 3) * 0.08;
     group.current.rotation.y = Math.cos(t / 3) * 0.08;
   });
-  const totalLeaves = 5;
+  const totalLeaves = 4; // Lowered for performance
   return (
     <group ref={group} position={[0, 0, 0]}>
       {[...Array(totalLeaves)].map((_, i) => (
@@ -116,6 +122,42 @@ const infoCards = [
 ];
 
 const InfoImpactSection = () => {
+  const location = useLocation();
+  const isHome = location.pathname === '/';
+  const [showLeaves, setShowLeaves] = useState(true);
+
+  // Performance check: disable leaves if FPS is too low
+  useEffect(() => {
+    if (!isHome) return;
+    let frame = 0;
+    let last = performance.now();
+    let lowFpsCount = 0;
+    let running = true;
+    function checkFps(now: number) {
+      if (!running) return;
+      frame++;
+      if (frame >= 20) {
+        const elapsed = now - last;
+        const fps = 1000 * frame / elapsed;
+        if (fps < 30) {
+          lowFpsCount++;
+        } else {
+          lowFpsCount = 0;
+        }
+        if (lowFpsCount >= 2) {
+          setShowLeaves(false);
+          running = false;
+          return;
+        }
+        frame = 0;
+        last = now;
+      }
+      requestAnimationFrame(checkFps);
+    }
+    requestAnimationFrame(checkFps);
+    return () => { running = false; };
+  }, [isHome]);
+
   return (
     <motion.section
       className="relative py-24 px-6 text-center bg-gradient-to-br from-green-50 via-green-100 to-white overflow-hidden"
@@ -130,14 +172,16 @@ const InfoImpactSection = () => {
         Whether you’re a student, parent, or organization — there’s a place for you in our mission to restore and protect the planet.
       </p>
       <div className="w-full max-w-6xl mx-auto h-[28rem] mb-14 flex items-center justify-center relative">
-        {/* Leaves Animation */}
-        <div className="absolute inset-0 w-full h-full z-0 pointer-events-none">
-          <Canvas shadows camera={{ position: [0, 0, 11], fov: 50 }} style={{ width: '100%', height: '100%' }}>
-            <ambientLight intensity={0.7} />
-            <directionalLight position={[2, 5, 5]} intensity={1.1} castShadow />
-            <LeafCluster />
-          </Canvas>
-        </div>
+        {/* Leaves Animation: Only on Home page and if performance is good */}
+        {isHome && showLeaves && (
+          <div className="absolute inset-0 w-full h-full z-0 pointer-events-none">
+            <Canvas shadows camera={{ position: [0, 0, 11], fov: 50 }} style={{ width: '100%', height: '100%' }}>
+              <ambientLight intensity={0.7} />
+              <directionalLight position={[2, 5, 5]} intensity={1.1} castShadow />
+              <LeafCluster />
+            </Canvas>
+          </div>
+        )}
 
         {/* Info Cards */}
         <motion.div
