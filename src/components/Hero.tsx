@@ -47,7 +47,7 @@ const Hero = () => {
       >
         <div className="backdrop-blur-md bg-white/10 border border-white/20 shadow-xl rounded-2xl p-10 max-w-3xl mx-auto">
           <h1 className="text-5xl sm:text-6xl font-extrabold text-white mb-4 drop-shadow-md leading-tight">
-            SEWA Green Team
+            Sewa Green Team
           </h1>
           <p className="text-2xl sm:text-3xl font-medium text-green-300 mb-8 h-[40px] select-none cursor-default">
             <span ref={typedRef} />

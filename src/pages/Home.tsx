@@ -35,7 +35,7 @@ const Home = () => {
           Together, We’re Growing a Greener Future 🌍
         </h2>
         <p className="text-gray-700 mb-10 text-lg max-w-3xl mx-auto">
-          SEWA Green Team is a youth-powered environmental force reshaping communities through cleanups, education, and green action.
+          Sewa Green Team is a youth-powered environmental force reshaping communities through cleanups, education, and green action.
         </p>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8">
           <Link

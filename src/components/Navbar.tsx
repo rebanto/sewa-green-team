@@ -47,7 +47,7 @@ const Navbar = () => {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.4 }}
           >
-            SEWA Green Team
+            Sewa Green Team
           </motion.span>
         </Link>
 

@@ -18,13 +18,13 @@ const timelineData = [
     year: "2022",
     title: "SGT Is Born 🌱",
     description:
-      "Founded in late 2022 to make SEWA events more sustainable — like using paper bags at Holi and reusable plates at the 5K.",
+      "Founded in late 2022 to make Sewa events more sustainable — like using paper bags at Holi and reusable plates at the 5K.",
   },
   {
     year: "2023",
     title: "Eco-Activism Starts ♻️",
     description:
-      "Shifted from just supporting SEWA events to running cleanups and raising awareness about local environmental issues.",
+      "Shifted from just supporting Sewa events to running cleanups and raising awareness about local environmental issues.",
   },
   {
     year: "2024–25",
@@ -75,7 +75,7 @@ const About = () => {
           variants={fadeUp}
           custom={1}
         >
-          The SEWA Green Team (SGT) is a student-powered sustainability force, born in 2022 to make community events cleaner, greener, and more impactful.
+          The Sewa Green Team (SGT) is a student-powered sustainability force, born in 2022 to make community events cleaner, greener, and more impactful.
         </motion.p>
       </motion.section>
 

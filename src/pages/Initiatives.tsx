@@ -20,7 +20,7 @@ const initiatives = [
 	{
 		title: 'Adopt-A-Mile Road Program',
 		description:
-			'In partnership with SEWA International, we’ve taken full responsibility for a local roadway—ensuring it stays clean and green through regular maintenance drives.',
+			'In partnership with Sewa International, we’ve taken full responsibility for a local roadway—ensuring it stays clean and green through regular maintenance drives.',
 		icon: <FaRoad className="text-yellow-600 text-3xl" />,
 		image: '/hero_bg.jpg',
 	},
