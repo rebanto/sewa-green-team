@@ -1,9 +1,18 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "../lib/supabaseClient";
 
 const GetInvolved = () => {
-  const [isLogin, setIsLogin] = useState(false);
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const loginQuery = searchParams.get("login") === "true";
+  const [isLogin, setIsLogin] = useState(loginQuery);
+
+  useEffect(() => {
+    setIsLogin(loginQuery);
+  }, [loginQuery]);
+
   const [formData, setFormData] = useState({
     full_name: "",
     email: "",
@@ -68,9 +77,14 @@ const GetInvolved = () => {
     }
   };
 
+  const toggleLogin = () => {
+    const newLogin = !isLogin;
+    setIsLogin(newLogin);
+    navigate(`/get-involved${newLogin ? "?login=true" : ""}`, { replace: true });
+  };
+
   return (
     <div className="relative">
-
       <motion.div
         initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
@@ -84,12 +98,23 @@ const GetInvolved = () => {
           {isLogin ? "Welcome Back" : "Get Involved"}
         </motion.h1>
 
+        {/* Switcher above the form */}
+        <div className="mb-6 text-center text-sm text-[#5e6651]">
+          {isLogin ? "Don't have an account?" : "Already have an account?"}{" "}
+          <button
+            onClick={toggleLogin}
+            className="text-[#8a9663] font-semibold hover:underline transition"
+          >
+            {isLogin ? "Sign up here." : "Log in here."}
+          </button>
+        </div>
+
         <motion.form
           onSubmit={handleSubmit}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2 }}
-          className="space-y-5 bg-white/90 border border-[#cdd1bc] p-10 rounded-2xl shadow-xl backdrop-blur-xl"
+          className="space-y-5 bg-white/90 border border-[#cdd1bc] px-10 py-10 rounded-2xl shadow-xl backdrop-blur-xl"
         >
           {!isLogin && (
             <>
@@ -110,7 +135,6 @@ const GetInvolved = () => {
               <label className="block font-medium mb-1" htmlFor="lead_id">Lead ID <span className="text-red-500">*</span></label>
               <input id="lead_id" name="lead_id" onChange={handleChange} value={formData.lead_id} placeholder="Lead ID" required className="formInput" />
 
-              {/* Divider before optional info */}
               <div className="w-full flex items-center my-6">
                 <div className="flex-grow h-px bg-[#cdd1bc]" />
                 <span className="mx-4 text-[#6e8b15] font-semibold">Optional</span>
@@ -154,7 +178,6 @@ const GetInvolved = () => {
             </>
           )}
 
-          {/* Divider before email/password */}
           <div className="w-full flex items-center my-6">
             <div className="flex-grow h-px bg-[#cdd1bc]" />
             <span className="mx-4 text-[#6e8b15] font-semibold">Account</span>
@@ -173,16 +196,6 @@ const GetInvolved = () => {
             {isLogin ? "Log In →" : "Sign Up →"}
           </button>
         </motion.form>
-
-        <p className="mt-6 text-center text-sm text-[#5e6651]">
-          {isLogin ? "Don't have an account?" : "Already have an account?"}{" "}
-          <button
-            onClick={() => setIsLogin(!isLogin)}
-            className="text-green-700 font-semibold hover:underline transition"
-          >
-            {isLogin ? "Sign up here." : "Log in here."}
-          </button>
-        </p>
       </motion.div>
     </div>
   );

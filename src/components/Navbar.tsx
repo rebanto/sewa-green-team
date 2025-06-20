@@ -29,6 +29,9 @@ const Navbar = () => {
         : 'text-[#5f6743] hover:text-[#b87539]'
     }`;
 
+  const loginLinkClass =
+    'bg-[#8a9663] text-white px-5 py-2 rounded-full font-semibold shadow-md hover:bg-[#6f7c50] transition-all duration-300';
+
   return (
     <nav
       className={`fixed top-0 w-full z-50 transition-all duration-300 ${
@@ -56,7 +59,7 @@ const Navbar = () => {
         </Link>
 
         {/* Desktop Links */}
-        <div className="hidden md:flex space-x-6 text-base font-medium">
+        <div className="hidden md:flex space-x-6 text-base font-medium items-center">
           {routes.map(({ name, path }) => (
             <Link key={path} to={path} className={linkClass(path)}>
               {name}
@@ -69,6 +72,9 @@ const Navbar = () => {
               )}
             </Link>
           ))}
+          <Link to="/get-involved?login=true" className={loginLinkClass}>
+            Login
+          </Link>
         </div>
 
         {/* Mobile Toggle */}
@@ -104,6 +110,13 @@ const Navbar = () => {
                   {name}
                 </Link>
               ))}
+              <Link
+                to="/get-involved?login=true"
+                onClick={() => setIsOpen(false)}
+                className={`${loginLinkClass} text-center`}
+              >
+                Login
+              </Link>
             </div>
           </motion.div>
         )}
