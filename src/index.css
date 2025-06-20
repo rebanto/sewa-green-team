@@ -8,3 +8,9 @@ h1, h2, h3, h4, h5, h6, p, span, div, li, ul, ol, label {
 html {
   scroll-behavior: smooth;
 }
+
+@layer components {
+  .formInput {
+    @apply w-full p-3 rounded-lg border border-[#cdd1bc] focus:ring-2 focus:ring-[#8a9663] transition duration-300;
+  }
+}
