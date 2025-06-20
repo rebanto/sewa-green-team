@@ -28,7 +28,7 @@ const initiatives = [
 
 export default function Initiatives() {
   return (
-    <section className="relative w-full bg-gradient-to-br from-green-50 to-white py-20 px-6">
+    <section className="relative w-full bg-gradient-to-br from-white via-[#ebe7d9] to-[#e2c5a9] py-20 px-6">
       <motion.div
         initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}

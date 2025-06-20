@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react'
-import { Link, useLocation } from 'react-router-dom'
-import { motion, AnimatePresence } from 'framer-motion'
-import { Menu, X } from 'lucide-react'
+import { useState, useEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Menu, X } from 'lucide-react';
 
 const routes = [
   { name: 'Home', path: '/' },
@@ -9,25 +9,25 @@ const routes = [
   { name: 'Initiatives', path: '/initiatives' },
   { name: 'Get Involved', path: '/get-involved' },
   { name: 'Contact', path: '/contact' },
-]
+];
 
 const Navbar = () => {
-  const { pathname } = useLocation()
-  const [isOpen, setIsOpen] = useState(false)
-  const [scrolled, setScrolled] = useState(false)
+  const { pathname } = useLocation();
+  const [isOpen, setIsOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 10)
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
+    const handleScroll = () => setScrolled(window.scrollY > 10);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const linkClass = (path: string) =>
     `relative transition-all duration-300 ${
       pathname === path
         ? 'text-[#8a9663] font-semibold'
-        : 'text-[#858d6a] hover:text-[#dba979]'
-    }`
+        : 'text-[#5f6743] hover:text-[#b87539]'
+    }`;
 
   return (
     <nav
@@ -39,8 +39,13 @@ const Navbar = () => {
         {/* Logo */}
         <Link
           to="/"
-          className="text-2xl font-extrabold text-[#8a9663] tracking-tight hover:scale-105 transition-transform duration-300"
+          className="flex items-center space-x-3 text-2xl font-extrabold text-[#8a9663] tracking-tight hover:scale-105 transition-transform duration-300"
         >
+          <img
+            src="/SGT_logo.png"
+            alt="SGT logo"
+            className="w-8 h-8 object-contain"
+          />
           <motion.span
             initial={{ opacity: 0, x: -10 }}
             animate={{ opacity: 1, x: 0 }}
@@ -58,7 +63,7 @@ const Navbar = () => {
               {pathname === path && (
                 <motion.div
                   layoutId="underline"
-                  className="absolute -bottom-1 left-0 h-[2px] w-full bg-[#dba979] rounded-full"
+                  className="absolute -bottom-1 left-0 h-[2px] w-full bg-[#b87539] rounded-full"
                   transition={{ type: 'spring', stiffness: 300, damping: 25 }}
                 />
               )}
@@ -104,7 +109,7 @@ const Navbar = () => {
         )}
       </AnimatePresence>
     </nav>
-  )
-}
+  );
+};
 
-export default Navbar
+export default Navbar;
