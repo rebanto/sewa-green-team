@@ -10,7 +10,7 @@ const fadeUp = {
   show: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.6 }, // Remove 'ease' for compatibility
+    transition: { duration: 0.6 },
   },
 }
 
@@ -31,16 +31,16 @@ const Home = () => {
         className="max-w-5xl mx-auto px-6 py-20 text-center"
         variants={fadeUp}
       >
-        <h2 className="text-4xl font-extrabold mb-6 text-green-700 leading-tight">
+        <h2 className="text-4xl font-extrabold mb-6 text-[#6b7547] leading-tight">
           Together, We’re Growing a Greener Future 🌍
         </h2>
-        <p className="text-gray-700 mb-10 text-lg max-w-3xl mx-auto">
+        <p className="text-[#c27d50] mb-10 text-lg max-w-3xl mx-auto">
           Sewa Green Team is a youth-powered environmental force reshaping communities through cleanups, education, and green action.
         </p>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8">
           <Link
             to="/about"
-            className="inline-block bg-green-100 text-green-800 font-semibold px-6 py-3 rounded-full border border-green-300 hover:bg-green-200 hover:text-green-900 transition shadow-sm"
+            className="inline-block bg-[#f4f3ec] text-[#6b7547] font-semibold px-6 py-3 rounded-full border border-[#cdd1bc] hover:bg-[#e6e8d5] hover:text-[#525c32] transition shadow-sm"
           >
             Learn More About Us
           </Link>
@@ -50,18 +50,18 @@ const Home = () => {
 
       {/* Featured Event Section */}
       <motion.section
-        className="bg-green-50 py-20 px-6"
+        className="bg-[#f9f8f4] py-20 px-6"
         variants={fadeUp}
       >
         <div className="max-w-5xl mx-auto text-center">
-          <h2 className="text-3xl font-bold text-green-700 mb-4">🌱 Recent Impact</h2>
-          <p className="text-gray-600 mb-8">
+          <h2 className="text-3xl font-bold text-[#c27d50] mb-4">🌱 Recent Impact</h2>
+          <p className="text-[#6c7358] mb-8">
             These aren’t just events — they’re movements creating lasting change.
           </p>
           <FeaturedEvent />
           <Link
             to="/initiatives"
-            className="inline-block mt-8 bg-green-600 text-white px-6 py-3 rounded-full hover:bg-green-700 transition shadow-lg hover:scale-105"
+            className="inline-block mt-8 bg-[#6b7547] text-white px-6 py-3 rounded-full hover:bg-[#525c32] transition shadow-lg hover:scale-105"
           >
             See All Initiatives →
           </Link>
@@ -69,7 +69,6 @@ const Home = () => {
       </motion.section>
 
       <InfoImpactSection />
-      
     </motion.div>
   )
 }

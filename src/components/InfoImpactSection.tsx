@@ -44,12 +44,10 @@ function Leaf({ index, total }: { index: number; total: number }) {
   const angleOffset = useMemo(() => Math.random() * Math.PI * 2, []);
   const radiusOffset = useMemo(() => Math.random() * 0.8, []);
 
-  // Reduce animation complexity: throttle updates
   const lastUpdate = useRef(0);
   useFrame(({ clock }) => {
     if (!mesh.current) return;
     const t = clock.getElapsedTime();
-    // Only update every ~2 frames
     if (t - lastUpdate.current < 0.033) return;
     lastUpdate.current = t;
 
@@ -89,7 +87,7 @@ function LeafCluster() {
     group.current.rotation.x = Math.sin(t / 3) * 0.08;
     group.current.rotation.y = Math.cos(t / 3) * 0.08;
   });
-  const totalLeaves = 4; // Lowered for performance
+  const totalLeaves = 4;
   return (
     <group ref={group} position={[0, 0, 0]}>
       {[...Array(totalLeaves)].map((_, i) => (
@@ -105,19 +103,19 @@ const infoCards = [
     name: 'Who We Are',
     desc: 'Learn about our mission, team, and values.',
     to: '/about',
-    icon: <FaLeaf className="text-3xl text-green-600 mb-4" />,
+    icon: <FaLeaf className="text-3xl text-[#6b7547] mb-4" />,
   },
   {
     name: 'What We Do',
     desc: 'Explore our cleanups and sustainability programs.',
     to: '/initiatives',
-    icon: <FaGlobeAmericas className="text-3xl text-green-600 mb-4" />,
+    icon: <FaGlobeAmericas className="text-3xl text-[#6b7547] mb-4" />,
   },
   {
     name: 'Partner With Us',
     desc: 'Want to collaborate? Let’s make it happen.',
     to: '/contact',
-    icon: <FaHandsHelping className="text-3xl text-green-600 mb-4" />,
+    icon: <FaHandsHelping className="text-3xl text-[#6b7547] mb-4" />,
   },
 ];
 
@@ -126,7 +124,6 @@ const InfoImpactSection = () => {
   const isHome = location.pathname === '/';
   const [showLeaves, setShowLeaves] = useState(true);
 
-  // Performance check: disable leaves if FPS is too low
   useEffect(() => {
     if (!isHome) return;
     let frame = 0;
@@ -160,19 +157,20 @@ const InfoImpactSection = () => {
 
   return (
     <motion.section
-      className="relative py-24 px-6 text-center bg-gradient-to-br from-green-50 via-green-100 to-white overflow-hidden"
+      className="relative py-24 px-6 text-center bg-gradient-to-br from-[#f4f3ec] via-[#ebe7d9] to-[#dba979] overflow-hidden"
+
       variants={fadeUp}
       initial="hidden"
       animate="visible"
     >
-      <h2 className="text-4xl font-extrabold text-green-700 mb-6 relative inline-block underline">
+      <h2 className="text-4xl font-extrabold text-[#c27d50] mb-6 relative inline-block underline">
         The Movement is Growing 🌿
       </h2>
-      <p className="text-gray-700 max-w-xl mx-auto mb-12 text-lg font-medium">
+      <p className="text-[#6c7358] max-w-xl mx-auto mb-12 text-lg font-medium">
         Whether you’re a student, parent, or organization — there’s a place for you in our mission to restore and protect the planet.
       </p>
+
       <div className="w-full max-w-6xl mx-auto h-[28rem] mb-14 flex items-center justify-center relative">
-        {/* Leaves Animation: Only on Home page and if performance is good */}
         {isHome && showLeaves && (
           <div className="absolute inset-0 w-full h-full z-0 pointer-events-none">
             <Canvas shadows camera={{ position: [0, 0, 11], fov: 50 }} style={{ width: '100%', height: '100%' }}>
@@ -183,7 +181,6 @@ const InfoImpactSection = () => {
           </div>
         )}
 
-        {/* Info Cards */}
         <motion.div
           className="relative z-10 max-w-4xl w-full mx-auto grid sm:grid-cols-2 lg:grid-cols-3 gap-8 text-center"
           variants={fadeUp}
@@ -199,24 +196,24 @@ const InfoImpactSection = () => {
                 scale: 1.1,
                 backgroundColor: 'rgba(255,255,255,0.2)',
                 boxShadow:
-                  '0 0 24px 4px rgba(34,197,94,0.13), 0 0 0 2px rgba(34,197,94,0.18), 0 0 60px rgba(0,255,127,0.07), 0 0 120px rgba(0,255,127,0.05)',
+                  '0 0 24px 4px rgba(107,117,71,0.13), 0 0 0 2px rgba(107,117,71,0.18), 0 0 60px rgba(107,117,71,0.07), 0 0 120px rgba(107,117,71,0.05)',
               }}
               transition={{
                 type: 'spring',
                 stiffness: 250,
                 damping: 20,
               }}
-              className="relative rounded-3xl bg-white/10 backdrop-blur-md border border-white/40 shadow-[inset_0_0_8px_rgba(34,197,94,0.10),0_2px_16px_0_rgba(34,197,94,0.10)] overflow-hidden group min-h-[16rem] transition-all duration-500 ease-out hover:shadow-[0_0_25px_rgba(34,197,94,0.3)]"
+              className="relative rounded-3xl bg-white/10 backdrop-blur-md border border-white/40 shadow-[inset_0_0_8px_rgba(107,117,71,0.10),0_2px_16px_0_rgba(107,117,71,0.10)] overflow-hidden group min-h-[16rem] transition-all duration-500 ease-out hover:shadow-[0_0_25px_rgba(107,117,71,0.3)]"
             >
               <Link to={card.to} className="block p-10">
                 <div className="flex flex-col items-center justify-center h-full">
                   {card.icon}
-                  <h3 className="text-xl font-extrabold text-green-800 mb-2 group-hover:text-green-900 transition-colors">
+                  <h3 className="text-xl font-extrabold text-[#6b7547] mb-2 group-hover:text-[#525c32] transition-colors">
                     {card.name}
                   </h3>
-                  <p className="text-gray-700 font-medium">{card.desc}</p>
+                  <p className="text-[#6c7358] font-medium">{card.desc}</p>
                 </div>
-                <div className="absolute inset-0 rounded-3xl ring-1 ring-white/30 group-hover:ring-green-300/30 group-hover:animate-pulse pointer-events-none" />
+                <div className="absolute inset-0 rounded-3xl ring-1 ring-white/30 group-hover:ring-[#c27d50]/30 group-hover:animate-pulse pointer-events-none" />
               </Link>
             </motion.div>
           ))}
@@ -225,7 +222,7 @@ const InfoImpactSection = () => {
 
       <Link
         to="/get-involved"
-        className="inline-block bg-green-600 text-white px-8 py-4 rounded-full text-lg font-semibold shadow-lg hover:shadow-2xl hover:bg-green-700 transition-transform transform hover:scale-105 focus-visible:outline-green-500 focus:outline-2 focus:outline-offset-2"
+        className="inline-block bg-[#c27d50] text-white px-8 py-4 rounded-full text-lg font-semibold shadow-lg hover:shadow-2xl hover:bg-[#a46336] transition-transform transform hover:scale-105 focus-visible:outline-[#c27d50] focus:outline-2 focus:outline-offset-2"
       >
         Join the Team →
       </Link>

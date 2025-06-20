@@ -36,19 +36,19 @@ const timelineData = [
 
 const pillars = [
   {
-    icon: <FaLeaf className="text-4xl text-green-600 mb-4" />,
+    icon: <FaLeaf className="text-4xl text-[#8a9663] mb-4" />,
     title: "Sustainability First",
     description:
       "From repacking colors to replacing plastic, we always put the planet first in every event and project.",
   },
   {
-    icon: <FaRecycle className="text-4xl text-green-600 mb-4" />,
+    icon: <FaRecycle className="text-4xl text-[#8a9663] mb-4" />,
     title: "Community Driven",
     description:
       "We believe change starts local. Our efforts are grassroots — involving schools, parks, and families.",
   },
   {
-    icon: <FaWater className="text-4xl text-green-600 mb-4" />,
+    icon: <FaWater className="text-4xl text-[#8a9663] mb-4" />,
     title: "Action-Oriented",
     description:
       "We don’t just talk — we host cleanups, educate, and take tangible steps toward a cleaner world.",
@@ -58,6 +58,7 @@ const pillars = [
 const About = () => {
   return (
     <div className="overflow-x-hidden">
+      {/* Intro */}
       <motion.section
         initial="hidden"
         animate="visible"
@@ -65,13 +66,13 @@ const About = () => {
         className="max-w-5xl mx-auto px-6 py-16 text-center"
       >
         <motion.h1
-          className="text-5xl font-extrabold text-green-700 mb-6"
+          className="text-5xl font-extrabold text-[#6b7547] mb-6"
           variants={fadeUp}
         >
           About Us
         </motion.h1>
         <motion.p
-          className="text-lg text-gray-700 max-w-2xl mx-auto"
+          className="text-lg text-[#858d6a] max-w-2xl mx-auto"
           variants={fadeUp}
           custom={1}
         >
@@ -79,18 +80,18 @@ const About = () => {
         </motion.p>
       </motion.section>
 
-      {/* Timeline Section */}
-      <section className="bg-green-50 py-16">
+      {/* Timeline */}
+      <section className="bg-[#f8f9f3] py-16">
         <div className="max-w-4xl mx-auto px-6">
-          <h2 className="text-3xl font-bold text-green-800 text-center mb-12">
+          <h2 className="text-3xl font-bold text-[#8a9663] text-center mb-12">
             How We’ve Grown
           </h2>
           <div className="space-y-12 relative">
-            <div className="absolute left-1/2 transform -translate-x-1/2 h-full w-1 bg-green-200 rounded" />
+            <div className="absolute left-1/2 transform -translate-x-1/2 h-full w-1 bg-[#cdd1bc] rounded" />
             {timelineData.map((item, index) => (
               <motion.div
                 key={item.year}
-                className={`relative w-full md:w-1/2 px-6 py-6 rounded-xl bg-white/30 backdrop-blur-md shadow-lg border border-green-200 transition-all hover:scale-105 ${
+                className={`relative w-full md:w-1/2 px-6 py-6 rounded-xl bg-white/40 backdrop-blur-md shadow-md border border-[#cdd1bc] transition-all hover:scale-105 ${
                   index % 2 === 0 ? "ml-auto" : "mr-auto"
                 }`}
                 initial="hidden"
@@ -99,41 +100,41 @@ const About = () => {
                 custom={index + 1}
                 variants={fadeUp}
               >
-                <h3 className="text-green-600 text-sm font-bold uppercase mb-1">
+                <h3 className="text-sm font-bold uppercase mb-1 text-[#dba979]">
                   {item.year}
                 </h3>
-                <h4 className="text-xl font-semibold mb-2">{item.title}</h4>
-                <p className="text-gray-700">{item.description}</p>
+                <h4 className="text-xl font-semibold mb-2 text-[#8a9663]">{item.title}</h4>
+                <p className="text-[#858d6a]">{item.description}</p>
               </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Pillars Section */}
+      {/* Pillars */}
       <motion.section
-        className="py-20 px-6 bg-gradient-to-b from-white to-green-50 text-center"
+        className="py-20 px-6 bg-gradient-to-b from-white to-[#f9f9f4] text-center"
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true }}
         variants={fadeUp}
       >
-        <h2 className="text-3xl font-bold text-green-800 mb-12">
+        <h2 className="text-3xl font-bold text-[#8a9663] mb-12">
           What We Stand For
         </h2>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
           {pillars.map((pillar, index) => (
             <motion.div
               key={pillar.title}
-              className="rounded-2xl p-8 bg-white/40 backdrop-blur-md shadow-lg border border-green-200 transition-all hover:scale-105"
+              className="rounded-2xl p-8 bg-white/50 backdrop-blur-md shadow-md border border-[#cdd1bc] transition-all hover:scale-105"
               variants={fadeUp}
               custom={index + 1}
             >
               {pillar.icon}
-              <h3 className="text-xl font-bold text-green-800 mb-2">
+              <h3 className="text-xl font-bold text-[#8a9663] mb-2">
                 {pillar.title}
               </h3>
-              <p className="text-gray-700">{pillar.description}</p>
+              <p className="text-[#858d6a]">{pillar.description}</p>
             </motion.div>
           ))}
         </div>

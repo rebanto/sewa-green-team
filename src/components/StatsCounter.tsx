@@ -31,20 +31,28 @@ const Stat = ({ label, end, suffix = '+' }: StatProps) => {
   return (
     <div className="text-center p-4">
       <motion.div
-        className="text-5xl font-extrabold text-green-600"
+        className="text-5xl font-extrabold text-[#8a9663]"
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ delay: 0.2 }}
       >
         {count}
-        <span className="text-green-400">{suffix}</span>
+        <span className="text-[#dba979]">{suffix}</span>
       </motion.div>
-      <div className="mt-2 text-gray-600 text-lg">{label}</div>
+      <div className="mt-2 text-[#858d6a] text-lg">{label}</div>
     </div>
   )
 }
 
-const StatsCounter = ({ volunteers, trash, events }: { volunteers: number; trash: number; events: number }) => {
+const StatsCounter = ({
+  volunteers,
+  trash,
+  events,
+}: {
+  volunteers: number
+  trash: number
+  events: number
+}) => {
   const stats = [
     { label: 'Volunteers', end: volunteers },
     { label: 'Trash Removed (lbs)', end: trash },
@@ -52,7 +60,7 @@ const StatsCounter = ({ volunteers, trash, events }: { volunteers: number; trash
   ]
 
   return (
-    <div className="max-w-4xl mx-auto py-16 grid grid-cols-1 sm:grid-cols-3 gap-8 bg-white rounded-xl shadow-lg">
+    <div className="max-w-4xl mx-auto py-16 grid grid-cols-1 sm:grid-cols-3 gap-8 bg-[#fdfdfb] rounded-xl shadow-lg border border-[#e8e8e0]">
       {stats.map((stat, i) => (
         <motion.div
           key={stat.label}

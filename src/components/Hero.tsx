@@ -35,8 +35,8 @@ const Hero = () => {
       {/* Overlay */}
       <div className="absolute inset-0 bg-gradient-to-br from-black/60 via-black/40 to-black/60 z-0" />
 
-      {/* Decorative Glow Burst (optional) */}
-      <div className="absolute top-[-10%] left-[-20%] w-[600px] h-[600px] bg-green-500/20 rounded-full blur-[120px] opacity-30 z-0 animate-pulse" />
+      {/* Glow Burst */}
+      <div className="absolute top-[-10%] left-[-20%] w-[600px] h-[600px] bg-[#8a9663]/20 rounded-full blur-[120px] opacity-30 z-0 animate-pulse" />
 
       {/* Main Content */}
       <motion.div
@@ -49,27 +49,21 @@ const Hero = () => {
           <h1 className="text-5xl sm:text-6xl font-extrabold text-white mb-4 drop-shadow-md leading-tight">
             Sewa Green Team
           </h1>
-          <p className="text-2xl sm:text-3xl font-medium text-green-300 mb-8 h-[40px] select-none cursor-default">
+          <p className="text-2xl sm:text-3xl font-medium text-[#dba979] mb-8 h-[40px] select-none cursor-default">
             <span ref={typedRef} />
           </p>
 
           {/* Buttons */}
           <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.97 }}
-            >
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}>
               <Link
                 to="/get-involved"
-                className="bg-green-600 hover:bg-green-700 px-6 py-3 rounded-full font-semibold text-white transition duration-300 shadow-md hover:shadow-lg hover:shadow-green-400/40 focus:outline-none focus:ring-2 focus:ring-green-300/50"
+                className="bg-[#8a9663] hover:bg-[#7a8757] px-6 py-3 rounded-full font-semibold text-white transition duration-300 shadow-md hover:shadow-lg hover:shadow-[#8a9663]/40 focus:outline-none focus:ring-2 focus:ring-[#8a9663]/50"
               >
                 Volunteer Now →
               </Link>
             </motion.div>
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.97 }}
-            >
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}>
               <Link
                 to="/initiatives"
                 className="border border-white/30 bg-white/10 hover:bg-white/20 px-6 py-3 rounded-full text-white font-semibold backdrop-blur-sm transition shadow-md hover:shadow-lg hover:shadow-white/30 focus:outline-none focus:ring-2 focus:ring-white/40"
@@ -89,7 +83,7 @@ const Hero = () => {
       >
         <div className="flex items-center justify-center">
           <div className="backdrop-blur-md bg-white/20 rounded-full p-2 border border-white/30 shadow-lg">
-            <ChevronDown size={38} className="text-green-500 drop-shadow-md transition-transform duration-300 hover:scale-115" />
+            <ChevronDown size={38} className="text-[#dba979] drop-shadow-md transition-transform duration-300 hover:scale-115" />
           </div>
         </div>
       </motion.div>

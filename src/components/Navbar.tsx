@@ -16,7 +16,6 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
 
-  // Listen for scroll depth
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 10)
     window.addEventListener('scroll', handleScroll)
@@ -26,8 +25,8 @@ const Navbar = () => {
   const linkClass = (path: string) =>
     `relative transition-all duration-300 ${
       pathname === path
-        ? 'text-green-600 font-semibold'
-        : 'text-gray-700 hover:text-green-500'
+        ? 'text-[#8a9663] font-semibold'
+        : 'text-[#858d6a] hover:text-[#dba979]'
     }`
 
   return (
@@ -40,7 +39,7 @@ const Navbar = () => {
         {/* Logo */}
         <Link
           to="/"
-          className="text-2xl font-extrabold text-green-700 tracking-tight hover:scale-105 transition-transform duration-300"
+          className="text-2xl font-extrabold text-[#8a9663] tracking-tight hover:scale-105 transition-transform duration-300"
         >
           <motion.span
             initial={{ opacity: 0, x: -10 }}
@@ -59,7 +58,7 @@ const Navbar = () => {
               {pathname === path && (
                 <motion.div
                   layoutId="underline"
-                  className="absolute -bottom-1 left-0 h-[2px] w-full bg-green-500 rounded-full"
+                  className="absolute -bottom-1 left-0 h-[2px] w-full bg-[#dba979] rounded-full"
                   transition={{ type: 'spring', stiffness: 300, damping: 25 }}
                 />
               )}
@@ -71,7 +70,7 @@ const Navbar = () => {
         <div className="md:hidden">
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="text-green-700 hover:scale-110 transition"
+            className="text-[#8a9663] hover:scale-110 transition"
           >
             {isOpen ? <X size={28} /> : <Menu size={28} />}
           </button>
