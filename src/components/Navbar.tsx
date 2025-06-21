@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { supabase } from '../lib/supabaseClient';
+import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
@@ -15,11 +16,27 @@ const Navbar = () => {
   const { pathname } = useLocation();
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 10);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const { data } = await supabase.auth.getUser();
+      setUser(data.user);
+    };
+    fetchUser();
+    // Optionally, listen for auth state changes
+    const { data: listener } = supabase.auth.onAuthStateChange(() => {
+      fetchUser();
+    });
+    return () => {
+      listener?.subscription.unsubscribe();
+    };
   }, []);
 
   const linkClass = (path: string) =>
@@ -75,6 +92,14 @@ const Navbar = () => {
           <Link to="/get-involved?login=true" className={loginLinkClass}>
             Login
           </Link>
+          {user && (
+            <Link
+              to="/dashboard"
+              className="ml-3 bg-[#b87539] text-white px-5 py-2 rounded-full font-semibold shadow-md hover:bg-[#8a9663] transition-all duration-300"
+            >
+              Dashboard
+            </Link>
+          )}
         </div>
 
         {/* Mobile Toggle */}
@@ -117,6 +142,15 @@ const Navbar = () => {
               >
                 Login
               </Link>
+              {user && (
+                <Link
+                  to="/dashboard"
+                  onClick={() => setIsOpen(false)}
+                  className="bg-[#b87539] text-white px-5 py-2 rounded-full font-semibold shadow-md hover:bg-[#8a9663] transition-all duration-300 text-center mt-2"
+                >
+                  Dashboard
+                </Link>
+              )}
             </div>
           </motion.div>
         )}

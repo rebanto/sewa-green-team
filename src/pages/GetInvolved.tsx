@@ -86,6 +86,13 @@ const GetInvolved = () => {
         return;
       }
 
+      // Update email_confirmed in users table if not already true
+      await supabase
+        .from("users")
+        .update({ email_confirmed: true })
+        .eq("id", user.id)
+        .eq("email_confirmed", false);
+
       // Check if user exists in users table, if not, insert
       const { data: userRow, error: fetchError } = await supabase
         .from("users")
@@ -146,6 +153,36 @@ const GetInvolved = () => {
 
       if (signUpError || !data.user) {
         alert(signUpError?.message || "Signup failed");
+        return;
+      }
+
+      // Insert user into users table immediately after signup (before confirmation)
+      const insertPayload = {
+        id: data.user.id,
+        full_name: formData.full_name,
+        email: formData.email,
+        phone: formData.phone || null,
+        lead_id: formData.lead_id,
+        role: formData.role,
+        parent_1_name:
+          formData.role === "STUDENT" ? formData.parent_1_name || null : null,
+        parent_1_email:
+          formData.role === "STUDENT" ? formData.parent_1_email || null : null,
+        parent_1_phone:
+          formData.role === "STUDENT" ? formData.parent_1_phone || null : null,
+        parent_2_name:
+          formData.role === "STUDENT" ? formData.parent_2_name || null : null,
+        parent_2_email:
+          formData.role === "STUDENT" ? formData.parent_2_email || null : null,
+        parent_2_phone:
+          formData.role === "STUDENT" ? formData.parent_2_phone || null : null,
+        status: 'PENDING',
+      };
+      const { error: dbError } = await supabase
+        .from("users")
+        .insert(insertPayload);
+      if (dbError) {
+        alert(dbError.message);
         return;
       }
 

@@ -36,8 +36,8 @@ export const useAuthRedirect = () => {
       }
 
       if (userRecord.status === "APPROVED") {
-        // Only redirect if not already on dashboard
-        if (location.pathname !== "/dashboard") navigate("/dashboard");
+        // Only redirect to dashboard if not already on dashboard or admin
+        if (location.pathname !== "/dashboard" && location.pathname !== "/admin") navigate("/dashboard");
       } else {
         if (location.pathname !== "/not-approved") navigate("/not-approved");
       }
