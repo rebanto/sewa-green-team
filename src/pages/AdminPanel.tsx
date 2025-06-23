@@ -28,11 +28,18 @@ const AdminPanel = () => {
     title: '',
     description: '',
     date: '',
+    time: '', // new time field
     location: '',
     waiver_required: false,
   });
 
   const navigate = useNavigate();
+
+  // Helper to format ISO datetime string to YYYY-MM-DD for input type=date
+  const formatDateForInput = (isoDateStr: string) => {
+    if (!isoDateStr) return '';
+    return isoDateStr.split('T')[0];
+  };
 
   // Fetch all necessary data
   const fetchData = async () => {
@@ -116,34 +123,30 @@ const AdminPanel = () => {
   // Create or update event
   const saveEvent = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (eventForm.id) {
-      // Edit existing
-      const { error } = await supabase
+    const eventId = eventForm.id ? String(eventForm.id) : '';
+    const formattedDate = eventForm.date ? eventForm.date.split('T')[0] : '';
+    const eventData = {
+      title: eventForm.title,
+      description: eventForm.description,
+      date: formattedDate,
+      time: eventForm.time,
+      location: eventForm.location,
+      waiver_required: eventForm.waiver_required,
+    };
+    if (eventId) {
+      const { data, error } = await supabase
         .from('events')
-        .update({
-          title: eventForm.title,
-          description: eventForm.description,
-          date: eventForm.date,
-          location: eventForm.location,
-          waiver_required: eventForm.waiver_required,
-        })
-        .eq('id', eventForm.id);
+        .update(eventData)
+        .eq('id', eventId)
+        .select('*');
       if (error) return alert(error.message);
+      if (!data || data.length === 0) alert('No event was updated. Check if the event ID matches the database.');
     } else {
-      // Create new
-      const { error } = await supabase.from('events').insert({
-        title: eventForm.title,
-        description: eventForm.description,
-        date: eventForm.date,
-        location: eventForm.location,
-        waiver_required: eventForm.waiver_required,
-      });
+      const { error } = await supabase.from('events').insert(eventData);
       if (error) return alert(error.message);
     }
-
-    setEventForm({ id: '', title: '', description: '', date: '', location: '', waiver_required: false });
-    fetchData();
+    setEventForm({ id: '', title: '', description: '', date: '', time: '', location: '', waiver_required: false });
+    await fetchData();
     setActiveTab('Manage Events');
   };
 
@@ -155,13 +158,14 @@ const AdminPanel = () => {
     setEvents(prev => prev.filter(ev => ev.id !== id));
   };
 
-  // Populate event form for editing
+  // Populate event form for editing, with fixed date formatting
   const startEditEvent = (event: any) => {
     setEventForm({
       id: event.id,
       title: event.title,
       description: event.description,
-      date: event.date,
+      date: formatDateForInput(event.date),
+      time: event.time || '',
       location: event.location,
       waiver_required: event.waiver_required,
     });

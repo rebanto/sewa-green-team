@@ -31,6 +31,14 @@ const CreateEventTab = ({
         className="formInput"
       />
       <input
+        type="time"
+        name="time"
+        value={eventForm.time}
+        onChange={handleEventChange}
+        required
+        className="formInput"
+      />
+      <input
         name="location"
         value={eventForm.location}
         onChange={handleEventChange}
@@ -62,6 +70,7 @@ const CreateEventTab = ({
               title: '',
               description: '',
               date: '',
+              time: '',
               location: '',
               waiver_required: false,
             })
