@@ -89,9 +89,12 @@ const Navbar = () => {
               )}
             </Link>
           ))}
-          <Link to="/get-involved?login=true" className={loginLinkClass}>
-            Login
-          </Link>
+          {/* Only show Login if not signed in */}
+          {!user && (
+            <Link to="/get-involved?login=true" className={loginLinkClass}>
+              Login
+            </Link>
+          )}
           {user && (
             <Link
               to="/dashboard"
@@ -135,13 +138,16 @@ const Navbar = () => {
                   {name}
                 </Link>
               ))}
-              <Link
-                to="/get-involved?login=true"
-                onClick={() => setIsOpen(false)}
-                className={`${loginLinkClass} text-center`}
-              >
-                Login
-              </Link>
+              {/* Only show Login if not signed in */}
+              {!user && (
+                <Link
+                  to="/get-involved?login=true"
+                  onClick={() => setIsOpen(false)}
+                  className={`${loginLinkClass} text-center`}
+                >
+                  Login
+                </Link>
+              )}
               {user && (
                 <Link
                   to="/dashboard"

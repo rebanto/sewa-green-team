@@ -1,9 +1,14 @@
-// Dashboard.tsx
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
 import {
-  LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer,
+  LineChart,
+  Line,
+  CartesianGrid,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
 } from 'recharts';
 
 const Dashboard = () => {
@@ -14,6 +19,7 @@ const Dashboard = () => {
   const [signupLoading, setSignupLoading] = useState<string | null>(null);
   const [selectedEvent, setSelectedEvent] = useState<any | null>(null);
   const [showEventModal, setShowEventModal] = useState(false);
+  const [logoutMessage, setLogoutMessage] = useState('');
 
   const navigate = useNavigate();
 
@@ -21,8 +27,19 @@ const Dashboard = () => {
     if (!dateStr) return 'No date';
     const date = new Date(dateStr);
     return new Intl.DateTimeFormat('en-US', {
-      year: 'numeric', month: 'short', day: 'numeric',
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
     }).format(date);
+  };
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    setLogoutMessage('Logged out successfully.');
+    setTimeout(() => {
+      setLogoutMessage('');
+      navigate('/');
+    }, 1500);
   };
 
   useEffect(() => {
@@ -107,11 +124,28 @@ const Dashboard = () => {
   if (loading) return <div className="py-32 text-center text-xl text-[#4d5640]">Loading dashboard...</div>;
 
   return (
-    <div className="min-h-screen bg-[#f8faf5] py-24 px-4 flex justify-center items-start">
-      <div className="w-full max-w-screen-xl grid grid-cols-1 lg:grid-cols-2 gap-12">
+    <div className="min-h-screen bg-[#f8faf5] py-24 px-4 flex justify-center items-start relative">
+      {/* Admin Panel and Log Out Buttons (fixed, stacked, always spaced) */}
+      <div className="fixed bottom-8 right-8 z-50 flex flex-col items-end gap-4">
+        {userData.role === 'ADMIN' && (
+          <button
+            onClick={() => navigate('/admin')}
+            className="bg-[#70923e] hover:bg-[#4f6e2d] text-white px-6 py-3 rounded-full shadow-lg transition w-40"
+          >
+            Admin Panel
+          </button>
+        )}
+        <button
+          onClick={handleLogout}
+          className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-full shadow-lg transition w-40"
+        >
+          Log Out
+        </button>
+      </div>
 
+      <div className="w-full max-w-screen-xl flex flex-col lg:flex-row gap-12">
         {/* LEFT SIDE */}
-        <div className="space-y-10">
+        <div className="space-y-10 w-full lg:w-1/2">
           <div className="bg-white rounded-3xl p-10 shadow-xl border border-[#b8c19a]">
             <h1 className="text-4xl font-extrabold text-[#4a612c] mb-4">
               {`Hey ${userData.full_name},`}
@@ -138,16 +172,7 @@ const Dashboard = () => {
         </div>
 
         {/* RIGHT SIDE */}
-        <div className="space-y-10">
-          {userData.role === 'ADMIN' && (
-            <button
-              onClick={() => navigate('/admin')}
-              className="fixed bottom-8 right-8 z-50 bg-[#70923e] hover:bg-[#4f6e2d] text-white px-6 py-3 rounded-full shadow-lg transition"
-            >
-              Admin Panel
-            </button>
-          )}
-
+        <div className="space-y-10 w-full lg:w-1/2">
           <div className="bg-white rounded-3xl p-8 shadow-lg border border-[#b8c19a]">
             <h2 className="text-2xl font-bold text-[#49682d] mb-6">Upcoming Events</h2>
             <ul className="space-y-4">
@@ -222,7 +247,7 @@ const Dashboard = () => {
       {/* Modal */}
       {showEventModal && selectedEvent && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-          <div className="bg-white w-full max-w-2xl max-h-[85vh] overflow-y-auto rounded-3xl p-8 relative shadow-2xl border border-[#b8c19a]">
+          <div className="bg-white w-[90vw] sm:w-full max-w-2xl max-h-[85vh] overflow-y-auto rounded-3xl p-6 sm:p-8 relative shadow-2xl border border-[#b8c19a]">
             <button onClick={() => setShowEventModal(false)} className="absolute top-4 right-6 text-2xl text-gray-700 hover:text-black font-bold">×</button>
             <h3 className="text-3xl font-serif font-bold text-[#49682d] mb-4">{selectedEvent.title}</h3>
             <p className="text-[#4d5640] mb-3">{selectedEvent.description}</p>

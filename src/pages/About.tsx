@@ -139,6 +139,38 @@ const About = () => {
           ))}
         </div>
       </motion.section>
+
+      {/* Leadership Team */}
+<motion.section
+  className="py-24 px-6 bg-[#f9f9f4] text-center"
+  initial="hidden"
+  whileInView="visible"
+  viewport={{ once: true }}
+  variants={fadeUp}
+>
+  <h2 className="text-3xl font-bold text-[#8a9663] mb-12">Meet Our Leadership</h2>
+  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 max-w-6xl mx-auto">
+    {[
+      { title: 'Managing Director' },
+      { title: 'Tree Planting Coordinator' },
+      { title: 'River Cleaning Coordinator' },
+      { title: 'Social Media Manager' },
+    ].map((leader, index) => (
+      <motion.div
+        key={leader.title}
+        className="bg-white/50 backdrop-blur-md border border-[#cdd1bc] rounded-2xl shadow-lg p-6 flex flex-col items-center text-center transition-all hover:scale-105"
+        variants={fadeUp}
+        custom={index + 1}
+      >
+        <div className="w-28 h-28 rounded-full bg-[#dfe8cb] flex items-center justify-center text-4xl text-[#a2b370] mb-4">
+          🧑‍💼
+        </div>
+        <h3 className="text-xl font-semibold text-[#8a9663] mb-1">{leader.title}</h3>
+        <p className="text-sm text-[#858d6a] italic">Name Placeholder</p>
+      </motion.div>
+    ))}
+  </div>
+</motion.section>
     </div>
   );
 };

@@ -8,6 +8,15 @@ const NotApproved = () => {
           Please wait for a team lead to review and approve your registration and check back later.
         </p>
         <a href="/" className="inline-block px-6 py-2 bg-[#8a9663] text-white rounded-full font-semibold hover:bg-[#73814f] transition">Go to Home</a>
+        <button
+          onClick={async () => {
+            await import('../lib/supabaseClient').then(({ supabase }) => supabase.auth.signOut());
+            window.location.href = '/';
+          }}
+          className="inline-block ml-4 px-6 py-2 bg-red-500 text-white rounded-full font-semibold hover:bg-red-600 transition"
+        >
+          Log Out
+        </button>
       </div>
     </div>
   );
