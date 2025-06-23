@@ -1,5 +1,13 @@
 import React, { useState } from 'react';
 import { supabase } from '../../lib/supabaseClient';
+import {
+  FaUser,
+  FaEnvelope,
+  FaPhone,
+  FaCheckCircle,
+  FaTimesCircle,
+  FaCopy,
+} from 'react-icons/fa';
 
 const ManageEventsTab = ({ events, startEditEvent, deleteEvent }: any) => {
   const [showModal, setShowModal] = useState(false);
@@ -84,6 +92,15 @@ const ManageEventsTab = ({ events, startEditEvent, deleteEvent }: any) => {
     setSignedUpUsers(prev => prev.filter(su => su.id !== signupId));
   };
 
+  const copyField = (field: 'email' | 'phone') => {
+    const text = signedUpUsers
+      .map(s => s.user?.[field])
+      .filter(Boolean)
+      .join(', ');
+    navigator.clipboard.writeText(text);
+    alert(`${field === 'email' ? 'Emails' : 'Phone numbers'} copied!`);
+  };
+
   return (
     <>
       <section className="space-y-4 max-w-4xl mx-auto">
@@ -133,54 +150,97 @@ const ManageEventsTab = ({ events, startEditEvent, deleteEvent }: any) => {
       </section>
 
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-          <div className="bg-white rounded-lg shadow-lg w-4/5 max-h-[80vh] overflow-y-auto p-6 relative">
-            <h2 className="text-2xl font-semibold mb-4">Users Signed Up</h2>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-white bg-opacity-80 backdrop-blur-sm p-4">
+          <div className="relative w-full max-w-3xl max-h-[85vh] overflow-y-auto bg-white rounded-3xl shadow-2xl border border-[#cdd1bc] p-8">
             <button
               onClick={() => setShowModal(false)}
-              className="absolute top-3 right-3 text-gray-500 hover:text-gray-700 text-xl font-bold"
+              className="absolute top-4 right-6 text-2xl text-gray-600 hover:text-black font-bold"
             >
               ×
             </button>
 
+            <h2 className="text-3xl font-bold text-[#49682d] mb-4">
+              Users Signed Up
+            </h2>
+
+            {!loadingUsers && signedUpUsers.length > 0 && (
+              <div className="flex flex-wrap gap-4 mb-6">
+                <button
+                  onClick={() => copyField('email')}
+                  className="bg-[#70923e] hover:bg-[#5c7c32] text-white px-4 py-2 rounded-full font-semibold flex items-center gap-2"
+                >
+                  <FaEnvelope /> Copy Emails
+                </button>
+                <button
+                  onClick={() => copyField('phone')}
+                  className="bg-[#70923e] hover:bg-[#5c7c32] text-white px-4 py-2 rounded-full font-semibold flex items-center gap-2"
+                >
+                  <FaPhone /> Copy Phones
+                </button>
+              </div>
+            )}
+
             {loadingUsers ? (
-              <p>Loading users...</p>
+              <p className="text-gray-500 text-center">Loading users...</p>
             ) : signedUpUsers.length === 0 ? (
-              <p>No users signed up for this event yet.</p>
+              <p className="text-gray-600 text-center italic">No users signed up yet.</p>
             ) : (
-              <ul className="divide-y divide-gray-200">
+              <ul className="space-y-6">
                 {signedUpUsers.map(signup => {
                   const user = signup.user;
                   return (
-                    <li key={signup.id} className="py-3">
-                      <p className="font-semibold">{user.full_name}</p>
-                      <p className="text-sm text-gray-600">{user.email}</p>
-                      <p className="text-sm text-gray-600">{user.phone}</p>
-                      <p className="text-xs text-gray-500">
-                        {user.role} - {user.status}
-                      </p>
-                      <p className="text-xs text-gray-400">
-                        Signup created: {formatDate(signup.created_at)}
-                      </p>
+                    <li
+                      key={signup.id}
+                      className="p-4 rounded-2xl bg-[#f8f9f4] border border-[#dfe4cb] shadow-md"
+                    >
+                      <div className="mb-2 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                          <p className="flex items-center gap-2 text-lg font-bold text-[#4d5a30]">
+                            <FaUser className="text-[#6f7c45]" /> {user.full_name}
+                          </p>
+                          <p className="flex items-center gap-2 text-sm text-[#73814f] mt-1">
+                            <FaEnvelope className="text-[#b2b998]" /> {user.email}
+                          </p>
+                          <p className="flex items-center gap-2 text-sm text-[#73814f]">
+                            <FaPhone className="text-[#b2b998]" /> {user.phone}
+                          </p>
+                          <p className="text-xs text-gray-500 mt-1">
+                            {user.role} — {user.status}
+                          </p>
+                          <p className="text-xs text-gray-400">
+                            Signed up on {formatDate(signup.created_at)}
+                          </p>
+                        </div>
 
-                      <div className="mt-2 flex gap-3 flex-wrap">
-                        <button
-                          onClick={() => toggleWaiver(signup.id, signup.waiver_submitted)}
-                          className={`px-3 py-1 rounded-full text-sm font-semibold ${
-                            signup.waiver_submitted
-                              ? 'bg-green-600 text-white'
-                              : 'bg-gray-300 text-gray-800'
-                          }`}
-                        >
-                          {signup.waiver_submitted ? 'Waiver Submitted' : 'Waiver Not Submitted'}
-                        </button>
+                        <div className="mt-4 sm:mt-0 flex flex-col gap-2 items-start sm:items-end">
+                          <button
+                            onClick={() =>
+                              toggleWaiver(signup.id, signup.waiver_submitted)
+                            }
+                            className={`px-4 py-1.5 rounded-full text-sm font-semibold transition ${
+                              signup.waiver_submitted
+                                ? 'bg-green-100 text-green-800'
+                                : 'bg-gray-200 text-gray-700'
+                            }`}
+                          >
+                            {signup.waiver_submitted ? (
+                              <span className="flex items-center gap-2">
+                                <FaCheckCircle /> Waiver Submitted
+                              </span>
+                            ) : (
+                              <span className="flex items-center gap-2">
+                                <FaTimesCircle /> Waiver Missing
+                              </span>
+                            )}
+                          </button>
 
-                        <button
-                          onClick={() => removeSignup(signup.id)}
-                          className="px-3 py-1 bg-red-500 hover:bg-red-600 text-white rounded-full text-sm font-semibold"
-                        >
-                          Remove User
-                        </button>
+                          <button
+                            onClick={() => removeSignup(signup.id)}
+                            className="bg-red-500 hover:bg-red-600 text-white px-4 py-1.5 text-sm rounded-full font-semibold"
+                          >
+                            Remove User
+                          </button>
+                        </div>
                       </div>
                     </li>
                   );
