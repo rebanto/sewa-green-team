@@ -26,6 +26,9 @@ const GetInvolved = () => {
     parent_2_name: "",
     parent_2_email: "",
     parent_2_phone: "",
+    student_full_name: "",
+    student_email: "",
+    student_phone: "",
   });
 
   const [showResend, setShowResend] = useState(false);
@@ -61,6 +64,14 @@ const GetInvolved = () => {
     setShowResend(false);
     setResendError("");
 
+    // Validate parent info for students
+    if (!isLogin && formData.role === "STUDENT") {
+      if (!formData.parent_1_name || !formData.parent_1_email || !formData.parent_1_phone) {
+        alert("Please provide Parent 1 Name, Email, and Phone (required for students).");
+        return;
+      }
+    }
+
     if (isLogin) {
       const { data: signInData, error: loginError } =
         await supabase.auth.signInWithPassword({
@@ -80,20 +91,12 @@ const GetInvolved = () => {
       // Always check if email is confirmed
       const { data: userData } = await supabase.auth.getUser();
       const user = userData?.user;
-      if (!user?.email_confirmed_at) {
-        alert("Please verify your email before logging in.");
-        setShowResend(true);
+      if (!user) {
+        alert("User not found after login.");
         return;
       }
 
-      // Update email_confirmed in users table if not already true
-      await supabase
-        .from("users")
-        .update({ email_confirmed: true })
-        .eq("id", user.id)
-        .eq("email_confirmed", false);
-
-      // Check if user exists in users table, if not, insert
+      // Check if user exists in users table, if not, insert (even before email is confirmed)
       const { data: userRow, error: fetchError } = await supabase
         .from("users")
         .select("id, status")
@@ -106,7 +109,7 @@ const GetInvolved = () => {
       }
 
       if (!userRow) {
-        // Insert user into users table
+        // Insert user into users table with all info
         const insertPayload = {
           id: user.id,
           full_name: formData.full_name,
@@ -136,6 +139,19 @@ const GetInvolved = () => {
           return;
         }
       }
+
+      if (!user.email_confirmed_at) {
+        alert("Please verify your email before logging in.");
+        setShowResend(true);
+        return;
+      }
+
+      // Update email_confirmed in users table if not already true
+      await supabase
+        .from("users")
+        .update({ email_confirmed: true })
+        .eq("id", user.id)
+        .eq("email_confirmed", false);
 
       if (userRow?.status === "APPROVED") {
         navigate("/dashboard");
@@ -297,66 +313,151 @@ const GetInvolved = () => {
                 className="formInput"
               />
 
-              <div className="w-full flex items-center my-6">
-                <div className="flex-grow h-px bg-[#cdd1bc]" />
-                <span className="mx-4 text-[#6e8b15] font-semibold">
-                  Optional
-                </span>
-                <div className="flex-grow h-px bg-[#cdd1bc]" />
-              </div>
-
               <AnimatePresence>
                 {formData.role === "STUDENT" && (
+                  <>
+                    {/* Parent 1 (required) fields above Optional tag */}
+                    <motion.div
+                      key="parent1Info"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -20 }}
+                      className="pt-4"
+                    >
+                      <label className="block font-medium mb-1" htmlFor="parent_1_name">
+                        Parent 1 Name <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        id="parent_1_name"
+                        name="parent_1_name"
+                        onChange={handleChange}
+                        value={formData.parent_1_name}
+                        placeholder="Parent 1 Name"
+                        className="formInput mb-4"
+                        required={formData.role === "STUDENT"}
+                      />
+
+                      <label className="block font-medium mb-1" htmlFor="parent_1_email">
+                        Parent 1 Email <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        id="parent_1_email"
+                        name="parent_1_email"
+                        onChange={handleChange}
+                        value={formData.parent_1_email}
+                        placeholder="Parent 1 Email"
+                        className="formInput mb-4"
+                        required={formData.role === "STUDENT"}
+                        type="email"
+                      />
+
+                      <label className="block font-medium mb-1" htmlFor="parent_1_phone">
+                        Parent 1 Phone <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        id="parent_1_phone"
+                        name="parent_1_phone"
+                        onChange={handleChange}
+                        value={formData.parent_1_phone}
+                        placeholder="Parent 1 Phone"
+                        className="formInput mb-4"
+                        required={formData.role === "STUDENT"}
+                      />
+                    </motion.div>
+                    {/* Optional tag and Parent 2 fields below */}
+                    <div className="w-full flex items-center my-6">
+                      <div className="flex-grow h-px bg-[#cdd1bc]" />
+                      <span className="mx-4 text-[#6e8b15] font-semibold">
+                        Optional
+                      </span>
+                      <div className="flex-grow h-px bg-[#cdd1bc]" />
+                    </div>
+                    <motion.div
+                      key="parent2Info"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -20 }}
+                      className="pt-4"
+                    >
+                      <label className="block font-medium mb-1" htmlFor="parent_2_name">
+                        Parent 2 Name
+                      </label>
+                      <input
+                        id="parent_2_name"
+                        name="parent_2_name"
+                        onChange={handleChange}
+                        value={formData.parent_2_name}
+                        placeholder="Parent 2 Name"
+                        className="formInput mb-4"
+                      />
+
+                      <label className="block font-medium mb-1" htmlFor="parent_2_email">
+                        Parent 2 Email
+                      </label>
+                      <input
+                        id="parent_2_email"
+                        name="parent_2_email"
+                        onChange={handleChange}
+                        value={formData.parent_2_email}
+                        placeholder="Parent 2 Email"
+                        className="formInput mb-4"
+                        type="email"
+                      />
+
+                      <label className="block font-medium mb-1" htmlFor="parent_2_phone">
+                        Parent 2 Phone
+                      </label>
+                      <input
+                        id="parent_2_phone"
+                        name="parent_2_phone"
+                        onChange={handleChange}
+                        value={formData.parent_2_phone}
+                        placeholder="Parent 2 Phone"
+                        className="formInput"
+                      />
+                    </motion.div>
+                  </>
+                )}
+                {formData.role === "PARENT" && (
                   <motion.div
-                    key="parentInfo"
+                    key="studentInfo"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -20 }}
                     className="pt-4"
                   >
-                    <p className="font-semibold text-[#6b725a] mb-3">
-                      Optional Parent Info
-                    </p>
+                    <label className="block font-medium mb-1" htmlFor="student_full_name">
+                      Student Full Name
+                    </label>
                     <input
-                      name="parent_1_name"
+                      id="student_full_name"
+                      name="student_full_name"
                       onChange={handleChange}
-                      value={formData.parent_1_name}
-                      placeholder="Parent 1 Name"
+                      value={formData.student_full_name || ""}
+                      placeholder="Student Full Name"
                       className="formInput mb-4"
                     />
+                    <label className="block font-medium mb-1" htmlFor="student_email">
+                      Student Email
+                    </label>
                     <input
-                      name="parent_1_email"
+                      id="student_email"
+                      name="student_email"
                       onChange={handleChange}
-                      value={formData.parent_1_email}
-                      placeholder="Parent 1 Email"
+                      value={formData.student_email || ""}
+                      placeholder="Student Email"
                       className="formInput mb-4"
+                      type="email"
                     />
+                    <label className="block font-medium mb-1" htmlFor="student_phone">
+                      Student Phone
+                    </label>
                     <input
-                      name="parent_1_phone"
+                      id="student_phone"
+                      name="student_phone"
                       onChange={handleChange}
-                      value={formData.parent_1_phone}
-                      placeholder="Parent 1 Phone"
-                      className="formInput mb-4"
-                    />
-                    <input
-                      name="parent_2_name"
-                      onChange={handleChange}
-                      value={formData.parent_2_name}
-                      placeholder="Parent 2 Name"
-                      className="formInput mb-4"
-                    />
-                    <input
-                      name="parent_2_email"
-                      onChange={handleChange}
-                      value={formData.parent_2_email}
-                      placeholder="Parent 2 Email"
-                      className="formInput mb-4"
-                    />
-                    <input
-                      name="parent_2_phone"
-                      onChange={handleChange}
-                      value={formData.parent_2_phone}
-                      placeholder="Parent 2 Phone"
+                      value={formData.student_phone || ""}
+                      placeholder="Student Phone"
                       className="formInput"
                     />
                   </motion.div>
