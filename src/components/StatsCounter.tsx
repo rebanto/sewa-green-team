@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
+import { useWebsiteStats } from '../hooks/useWebsiteStats'
 
 interface StatProps {
   label: string
@@ -44,33 +45,31 @@ const Stat = ({ label, end, suffix = '+' }: StatProps) => {
   )
 }
 
-const StatsCounter = ({
-  volunteers,
-  trash,
-  events,
-}: {
-  volunteers: number
-  trash: number
-  events: number
-}) => {
-  const stats = [
-    { label: 'Volunteers', end: volunteers },
-    { label: 'Trash Removed (lbs)', end: trash },
-    { label: 'Events Hosted', end: events },
+const StatsCounter = () => {
+  const { stats, loading } = useWebsiteStats()
+
+  const statsArr = [
+    { label: 'Volunteers', end: stats.volunteers },
+    { label: 'Trash Removed (lbs)', end: stats.trash },
+    { label: 'Events Hosted', end: stats.events },
   ]
 
   return (
     <div className="max-w-4xl mx-auto py-16 grid grid-cols-1 sm:grid-cols-3 gap-8 bg-[#fdfdfb] rounded-xl shadow-lg border border-[#e8e8e0]">
-      {stats.map((stat, i) => (
-        <motion.div
-          key={stat.label}
-          initial={{ y: 30, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: i * 0.3, duration: 0.6 }}
-        >
-          <Stat {...stat} />
-        </motion.div>
-      ))}
+      {loading ? (
+        <div className="col-span-3 text-center text-gray-500">Loading stats...</div>
+      ) : (
+        statsArr.map((stat, i) => (
+          <motion.div
+            key={stat.label}
+            initial={{ y: 30, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: i * 0.3, duration: 0.6 }}
+          >
+            <Stat {...stat} />
+          </motion.div>
+        ))
+      )}
     </div>
   )
 }

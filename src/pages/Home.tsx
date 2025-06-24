@@ -45,7 +45,7 @@ const Home = () => {
             Learn More About Us
           </Link>
         </div>
-        <StatsCounter volunteers={150} trash={3200} events={24} />
+        <StatsCounter />
       </motion.section>
 
       {/* Featured Event Section */}

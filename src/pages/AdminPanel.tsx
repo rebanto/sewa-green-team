@@ -6,8 +6,9 @@ import PendingUsersTab from '../components/admin/PendingUsersTab';
 import AllUsersTab from '../components/admin/AllUsersTab';
 import CreateEventTab from '../components/admin/CreateEventTab';
 import ManageEventsTab from '../components/admin/ManageEventsTab';
+import WebsiteDetailsTab from '../components/admin/WebsiteDetailsTab';
 
-const tabs = ['Pending Users', 'All Users', 'Create Event', 'Manage Events'];
+const tabs = ['Pending Users', 'All Users', 'Create Event', 'Manage Events', 'Website Details'];
 
 const roles = ['ALL', 'STUDENT', 'PARENT', 'ADMIN', 'OTHER']; // adjust based on your roles
 const statusOptions = ['ALL', 'APPROVED', 'PENDING', 'REJECTED'];
@@ -261,6 +262,9 @@ const AdminPanel = () => {
             startEditEvent={startEditEvent}
             deleteEvent={deleteEvent}
           />
+        )}
+        {activeTab === 'Website Details' && (
+          <WebsiteDetailsTab />
         )}
       </div>
     </div>
