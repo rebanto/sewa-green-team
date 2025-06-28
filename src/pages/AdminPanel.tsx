@@ -32,6 +32,7 @@ const AdminPanel = () => {
     time: '', // new time field
     location: '',
     waiver_required: false,
+    waiver_url: '',
   });
 
   const navigate = useNavigate();
@@ -122,10 +123,23 @@ const AdminPanel = () => {
   };
 
   // Create or update event
-  const saveEvent = async (e: React.FormEvent) => {
+  const saveEvent = async (e: React.FormEvent, waiverFile?: File) => {
     e.preventDefault();
     const eventId = eventForm.id ? String(eventForm.id) : '';
     const formattedDate = eventForm.date ? eventForm.date.split('T')[0] : '';
+    let waiver_url = eventForm.waiver_url || '';
+    if (eventForm.waiver_required && !waiverFile && !waiver_url) {
+      alert('You must upload a waiver PDF for this event.');
+      return;
+    }
+    if (eventForm.waiver_required && waiverFile) {
+      // Upload to Supabase Storage
+      const fileName = `${Date.now()}_${waiverFile.name}`;
+      const { data, error } = await supabase.storage.from('waivers').upload(fileName, waiverFile, { upsert: true });
+      if (error) return alert('Failed to upload waiver PDF: ' + error.message);
+      const { data: publicUrlData } = supabase.storage.from('waivers').getPublicUrl(fileName);
+      waiver_url = publicUrlData.publicUrl;
+    }
     const eventData = {
       title: eventForm.title,
       description: eventForm.description,
@@ -133,6 +147,7 @@ const AdminPanel = () => {
       time: eventForm.time,
       location: eventForm.location,
       waiver_required: eventForm.waiver_required,
+      waiver_url: eventForm.waiver_required ? waiver_url : '',
     };
     if (eventId) {
       const { data, error } = await supabase
@@ -146,7 +161,7 @@ const AdminPanel = () => {
       const { error } = await supabase.from('events').insert(eventData);
       if (error) return alert(error.message);
     }
-    setEventForm({ id: '', title: '', description: '', date: '', time: '', location: '', waiver_required: false });
+    setEventForm({ id: '', title: '', description: '', date: '', time: '', location: '', waiver_required: false, waiver_url: '' });
     await fetchData();
     setActiveTab('Manage Events');
   };
@@ -169,6 +184,7 @@ const AdminPanel = () => {
       time: event.time || '',
       location: event.location,
       waiver_required: event.waiver_required,
+      waiver_url: event.waiver_url || '',
     });
     setActiveTab('Create Event');
   };

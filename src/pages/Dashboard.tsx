@@ -81,7 +81,7 @@ const Dashboard = () => {
   const handleSignUp = async (eventId: string) => {
     setSignupLoading(eventId);
     await supabase.from('event_signups').insert({
-      event_id: eventId, user_id: userData.id, status: 'SIGNED_UP', waiver_submitted: false,
+      event_id: eventId, user_id: userData.id, status: 'SIGNED_UP',
     });
     const { data: signups } = await supabase
       .from('event_signups')
@@ -178,7 +178,6 @@ const Dashboard = () => {
             <ul className="space-y-4">
               {upcomingEvents.map(event => {
                 const signedUp = !!userSignups[event.id];
-                const waiverDone = signedUp && userSignups[event.id].waiver_submitted;
 
                 return (
                   <li key={event.id} className="bg-[#f5f9e6] p-6 rounded-xl shadow flex justify-between flex-col lg:flex-row items-start lg:items-center gap-4">
@@ -187,7 +186,10 @@ const Dashboard = () => {
                       <p className="text-sm text-[#6b7f46]">{formatDate(event.date)} {event.time && `at ${event.time}`}</p>
                       <p className="text-sm text-[#6b7f46]">{event.location}</p>
                       {event.waiver_required && (
-                        <p className="text-xs mt-1 px-3 py-1 bg-red-100 text-red-700 rounded-full font-semibold w-fit">Waiver Required</p>
+                        <>
+                          <p className="text-xs mt-1 px-3 py-1 bg-red-100 text-red-700 rounded-full font-semibold w-fit">Waiver Required</p>
+                          <p className="text-xs mt-1 text-red-700 font-semibold">This event requires a signed waiver. <a href={event.waiver_url || '/waiver.pdf'} download className='underline text-blue-700'>Download Waiver PDF</a> and bring a signed copy in person.</p>
+                        </>
                       )}
                     </div>
                     <div className="flex items-center gap-4 flex-wrap">
@@ -199,22 +201,13 @@ const Dashboard = () => {
                         className="underline text-[#49682d] font-medium"
                       >View</button>
                       {signedUp ? (
-                        <>
-                          {event.waiver_required && (
-                            <span className={`text-xs font-semibold px-3 py-1 rounded-full ${
-                              waiverDone ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                            }`}>
-                              {waiverDone ? 'Waiver Submitted' : 'Waiver Pending'}
-                            </span>
-                          )}
-                          <button
-                            onClick={() => handleCancelSignup(event.id)}
-                            disabled={signupLoading === event.id}
-                            className="bg-red-600 text-white px-4 py-1.5 rounded-full font-semibold hover:bg-red-700"
-                          >
-                            {signupLoading === event.id ? 'Cancelling...' : 'Cancel'}
-                          </button>
-                        </>
+                        <button
+                          onClick={() => handleCancelSignup(event.id)}
+                          disabled={signupLoading === event.id}
+                          className="bg-red-600 text-white px-4 py-1.5 rounded-full font-semibold hover:bg-red-700"
+                        >
+                          {signupLoading === event.id ? 'Cancelling...' : 'Cancel'}
+                        </button>
                       ) : (
                         <button
                           onClick={() => handleSignUp(event.id)}
@@ -254,6 +247,9 @@ const Dashboard = () => {
             <p className="text-sm text-gray-600 mb-1">Date: {formatDate(selectedEvent.date)} {selectedEvent.time && `at ${selectedEvent.time}`}</p>
             <p className="text-sm text-gray-600 mb-3">Location: {selectedEvent.location}</p>
             <p className="text-sm font-semibold">Waiver Required: {selectedEvent.waiver_required ? 'Yes' : 'No'}</p>
+            {selectedEvent.waiver_required && (
+              <p className="text-xs mt-1 text-red-700 font-semibold">This event requires a signed waiver. <a href={selectedEvent.waiver_url || '/waiver.pdf'} download className='underline text-blue-700'>Download Waiver PDF</a> and bring a signed copy in person.</p>
+            )}
             <EventSignupCount eventId={selectedEvent.id} />
           </div>
         </div>

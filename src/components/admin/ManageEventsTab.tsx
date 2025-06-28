@@ -45,7 +45,6 @@ const ManageEventsTab = ({ events, startEditEvent, deleteEvent }: any) => {
         .select(`
           id,
           status,
-          waiver_submitted,
           user_id,
           event_id,
           created_at,
@@ -67,19 +66,6 @@ const ManageEventsTab = ({ events, startEditEvent, deleteEvent }: any) => {
     } finally {
       setLoadingUsers(false);
     }
-  };
-
-  const toggleWaiver = async (signupId: string, current: boolean) => {
-    const { error } = await supabase
-      .from('event_signups')
-      .update({ waiver_submitted: !current })
-      .eq('id', signupId);
-    if (error) return alert(error.message);
-    setSignedUpUsers(prev =>
-      prev.map(su =>
-        su.id === signupId ? { ...su, waiver_submitted: !current } : su
-      )
-    );
   };
 
   const removeSignup = async (signupId: string) => {
@@ -213,27 +199,6 @@ const ManageEventsTab = ({ events, startEditEvent, deleteEvent }: any) => {
                         </div>
 
                         <div className="mt-4 sm:mt-0 flex flex-col gap-2 items-start sm:items-end">
-                          <button
-                            onClick={() =>
-                              toggleWaiver(signup.id, signup.waiver_submitted)
-                            }
-                            className={`px-4 py-1.5 rounded-full text-sm font-semibold transition ${
-                              signup.waiver_submitted
-                                ? 'bg-green-100 text-green-800'
-                                : 'bg-gray-200 text-gray-700'
-                            }`}
-                          >
-                            {signup.waiver_submitted ? (
-                              <span className="flex items-center gap-2">
-                                <FaCheckCircle /> Waiver Submitted
-                              </span>
-                            ) : (
-                              <span className="flex items-center gap-2">
-                                <FaTimesCircle /> Waiver Missing
-                              </span>
-                            )}
-                          </button>
-
                           <button
                             onClick={() => removeSignup(signup.id)}
                             className="bg-red-500 hover:bg-red-600 text-white px-4 py-1.5 text-sm rounded-full font-semibold"

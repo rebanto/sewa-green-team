@@ -167,14 +167,15 @@ const GetInvolved = () => {
         },
       });
 
-      if (signUpError || !data.user) {
+      if (signUpError) {
         alert(signUpError?.message || "Signup failed");
         return;
       }
 
       // Insert user into users table immediately after signup (before confirmation)
+      // Always insert a row using email as unique key if user.id is not available
       const insertPayload = {
-        id: data.user.id,
+        id: data.user?.id || null, // May be null if user not returned
         full_name: formData.full_name,
         email: formData.email,
         phone: formData.phone || null,
@@ -194,9 +195,10 @@ const GetInvolved = () => {
           formData.role === "STUDENT" ? formData.parent_2_phone || null : null,
         status: 'PENDING',
       };
+      // Upsert to avoid duplicate rows if user signs up again before confirming
       const { error: dbError } = await supabase
         .from("users")
-        .insert(insertPayload);
+        .upsert([insertPayload], { onConflict: "email" });
       if (dbError) {
         alert(dbError.message);
         return;
