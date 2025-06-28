@@ -185,10 +185,10 @@ const Dashboard = () => {
                       <p className="font-bold text-[#4a612c] text-xl">{event.title}</p>
                       <p className="text-sm text-[#6b7f46]">{formatDate(event.date)} {event.time && `at ${event.time}`}</p>
                       <p className="text-sm text-[#6b7f46]">{event.location}</p>
-                      {event.waiver_required && (
+                      {event.waiver_required && event.waiver_url && event.date >= todayStr && (
                         <>
                           <p className="text-xs mt-1 px-3 py-1 bg-red-100 text-red-700 rounded-full font-semibold w-fit">Waiver Required</p>
-                          <p className="text-xs mt-1 text-red-700 font-semibold">This event requires a signed waiver. <a href={event.waiver_url || '/waiver.pdf'} download className='underline text-blue-700'>Download Waiver PDF</a> and bring a signed copy in person.</p>
+                          <p className="text-xs mt-1 text-red-700 font-semibold">This event requires a signed waiver. <a href={event.waiver_url} download className='underline text-blue-700'>Download Waiver PDF</a> and bring a signed copy in person.</p>
                         </>
                       )}
                     </div>
@@ -247,8 +247,8 @@ const Dashboard = () => {
             <p className="text-sm text-gray-600 mb-1">Date: {formatDate(selectedEvent.date)} {selectedEvent.time && `at ${selectedEvent.time}`}</p>
             <p className="text-sm text-gray-600 mb-3">Location: {selectedEvent.location}</p>
             <p className="text-sm font-semibold">Waiver Required: {selectedEvent.waiver_required ? 'Yes' : 'No'}</p>
-            {selectedEvent.waiver_required && (
-              <p className="text-xs mt-1 text-red-700 font-semibold">This event requires a signed waiver. <a href={selectedEvent.waiver_url || '/waiver.pdf'} download className='underline text-blue-700'>Download Waiver PDF</a> and bring a signed copy in person.</p>
+            {selectedEvent.waiver_required && selectedEvent.waiver_url && selectedEvent.date >= new Date().toISOString().split('T')[0] && (
+              <p className="text-xs mt-1 text-red-700 font-semibold">This event requires a signed waiver. <a href={selectedEvent.waiver_url} download className='underline text-blue-700'>Download Waiver PDF</a> and bring a signed copy in person.</p>
             )}
             <EventSignupCount eventId={selectedEvent.id} />
           </div>

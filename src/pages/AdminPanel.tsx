@@ -124,11 +124,21 @@ const AdminPanel = () => {
   };
 
   // Create or update event
+  // Prevent editing a past event to a future date
   const saveEvent = async (e: React.FormEvent, waiverFile?: File) => {
     e.preventDefault();
     const eventId = eventForm.id ? String(eventForm.id) : '';
     const formattedDate = eventForm.date ? eventForm.date.split('T')[0] : '';
     let waiver_url = eventForm.waiver_url || '';
+    const now = new Date().toISOString().split('T')[0];
+    if (eventId) {
+      // Editing an existing event
+      const originalEvent = events.find(ev => String(ev.id) === eventId);
+      if (originalEvent && originalEvent.date < now && formattedDate >= now) {
+        alert('You cannot change a past event to a future date.');
+        return;
+      }
+    }
     if (eventForm.waiver_required && !waiverFile && !waiver_url) {
       alert('You must upload a waiver PDF for this event.');
       return;
@@ -211,30 +221,32 @@ const AdminPanel = () => {
   // --- Automated deletion of PDFs for past events ---
   const deletePastEventPDFs = useDeletePastEventPDFs(
     'waivers',
-    async () => (events || []).filter(ev => ev.waiver_required && ev.waiver_url && new Date(ev.date) < new Date()),
+    async () => (events || []).filter(ev => {
+      // Only events with a waiver_url and a date in the past
+      return ev.waiver_required && ev.waiver_url && new Date(ev.date) < new Date();
+    }),
     (event) => {
-      // Extract the file path from the public URL
       try {
-        const url = new URL(event.waiver_url);
         // Supabase public URL: .../storage/v1/object/public/waivers/<file>
-        const idx = url.pathname.indexOf('/waivers/');
-        if (idx !== -1) {
-          return url.pathname.substring(idx + 1); // 'waivers/<file>'
+        // We want the path relative to the bucket, e.g. '<file>'
+        const url = new URL(event.waiver_url);
+        const match = url.pathname.match(/waivers\/(.+)$/);
+        if (match && match[1]) {
+          return match[1];
         }
-      } catch {}
+      } catch (e) {
+        console.error('Failed to parse waiver_url:', event.waiver_url, e);
+      }
       return '';
     }
   );
 
   useEffect(() => {
-    fetchData();
-  }, []);
-
-  useEffect(() => {
     if (events.length > 0) {
-      deletePastEventPDFs();
+      deletePastEventPDFs().then(() => {
+        // Optionally, you can refresh events here if needed
+      });
     }
-    // Only run when events change
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [events]);
 

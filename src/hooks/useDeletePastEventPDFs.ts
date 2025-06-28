@@ -20,11 +20,8 @@ export function useDeletePastEventPDFs<T extends { id: string; date: string }>(
       const pdfPaths = getPDFPath(event);
       const paths = Array.isArray(pdfPaths) ? pdfPaths : [pdfPaths];
       for (const path of paths) {
-        const { error } = await supabase.storage.from(bucketName).remove([path]);
-        if (error) {
-          // Optionally handle/log error
-          console.error(`Failed to delete PDF for event ${event.id}:`, error);
-        }
+        if (!path) continue;
+        await supabase.storage.from(bucketName).remove([path]);
       }
     }
   }, [bucketName, getPastEvents, getPDFPath]);

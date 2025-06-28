@@ -69,7 +69,7 @@ const CreateEventTab = ({
               className="formInput"
               required={!eventForm.waiver_url}
             />
-            {eventForm.waiver_url && (
+            {eventForm.waiver_url && eventForm.date >= new Date().toISOString().split('T')[0] && (
               <p className="text-xs mt-1">Current: <a href={eventForm.waiver_url} target="_blank" rel="noopener noreferrer" className="underline text-blue-700">Download Existing Waiver</a></p>
             )}
           </div>
