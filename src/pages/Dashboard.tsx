@@ -9,6 +9,7 @@ import {
   YAxis,
   Tooltip,
   ResponsiveContainer,
+  Legend,
 } from 'recharts';
 
 const Dashboard = () => {
@@ -20,6 +21,10 @@ const Dashboard = () => {
   const [selectedEvent, setSelectedEvent] = useState<any | null>(null);
   const [showEventModal, setShowEventModal] = useState(false);
   const [logoutMessage, setLogoutMessage] = useState('');
+  const [volunteerHours, setVolunteerHours] = useState<any[]>([]);
+  const [totalHours, setTotalHours] = useState(0);
+  const [graphPeriod, setGraphPeriod] = useState<'week' | 'month' | 'year'>('month');
+  const [graphData, setGraphData] = useState<any[]>([]);
 
   const navigate = useNavigate();
 
@@ -73,10 +78,54 @@ const Dashboard = () => {
         signupMap[su.event_id] = su;
       });
       setUserSignups(signupMap);
+
+      // Fetch volunteer hours
+      const { data: hoursData } = await supabase
+        .from('volunteer_hours')
+        .select('event_id, hours, event:events(id, title, date, time)')
+        .eq('user_id', user.id);
+      setVolunteerHours(hoursData || []);
+      setTotalHours((hoursData || []).reduce((sum, h) => sum + (h.hours || 0), 0));
+
+      // Aggregate for graph
+      if (hoursData) {
+        setGraphData(aggregateHours(hoursData, 'month'));
+      }
+
       setLoading(false);
     };
     fetchData();
   }, [navigate]);
+
+  // Update graph when period or data changes
+  useEffect(() => {
+    setGraphData(aggregateHours(volunteerHours, graphPeriod));
+  }, [volunteerHours, graphPeriod]);
+
+  // Helper to aggregate hours
+  function aggregateHours(hoursArr: any[], period: 'week' | 'month' | 'year') {
+    if (!hoursArr || hoursArr.length === 0) return [];
+    const map: Record<string, number> = {};
+    hoursArr.forEach(h => {
+      const date = h.event?.date;
+      if (!date) return;
+      const d = new Date(date);
+      let key = '';
+      if (period === 'week') {
+        // Week of year
+        const onejan = new Date(d.getFullYear(), 0, 1);
+        const week = Math.ceil((((d as any) - (onejan as any)) / 86400000 + onejan.getDay() + 1) / 7);
+        key = `${d.getFullYear()}-W${week}`;
+      } else if (period === 'month') {
+        key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      } else {
+        key = `${d.getFullYear()}`;
+      }
+      map[key] = (map[key] || 0) + (h.hours || 0);
+    });
+    // Sort keys
+    return Object.entries(map).sort(([a], [b]) => a.localeCompare(b)).map(([name, hours]) => ({ name, hours }));
+  }
 
   const handleSignUp = async (eventId: string) => {
     setSignupLoading(eventId);
@@ -113,13 +162,6 @@ const Dashboard = () => {
   const todayStr = new Date().toISOString().split('T')[0];
   const upcomingEvents = events.filter(ev => ev.date >= todayStr);
   const pastEvents = events.filter(ev => ev.date < todayStr);
-  const graphData = [
-    { name: 'Week 1', hours: 4 },
-    { name: 'Week 2', hours: 9 },
-    { name: 'Week 3', hours: 15 },
-    { name: 'Week 4', hours: 11 },
-    { name: 'Week 5', hours: 20 },
-  ];
 
   if (loading) return <div className="py-32 text-center text-xl text-[#4d5640]">Loading dashboard...</div>;
 
@@ -156,15 +198,27 @@ const Dashboard = () => {
           </div>
 
           <div className="bg-white rounded-3xl p-8 shadow-xl border border-[#b8c19a]">
-            <h2 className="text-2xl font-bold text-[#49682d] mb-4">Hours Volunteered (Demo)</h2>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-2xl font-bold text-[#49682d]">Hours Volunteered</h2>
+              <select
+                className="border rounded px-2 py-1 text-[#49682d] font-semibold"
+                value={graphPeriod}
+                onChange={e => setGraphPeriod(e.target.value as any)}
+              >
+                <option value="week">By Week</option>
+                <option value="month">By Month</option>
+                <option value="year">By Year</option>
+              </select>
+            </div>
             <div className="h-[320px]">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={graphData}>
+                <LineChart data={graphData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="5 5" />
                   <XAxis dataKey="name" stroke="#73814f" />
-                  <YAxis stroke="#73814f" />
+                  <YAxis stroke="#73814f" allowDecimals={false} />
                   <Tooltip />
-                  <Line type="monotone" dataKey="hours" stroke="#70923e" strokeWidth={4} />
+                  <Legend />
+                  <Line type="monotone" dataKey="hours" stroke="#70923e" strokeWidth={4} activeDot={{ r: 8 }} />
                 </LineChart>
               </ResponsiveContainer>
             </div>
@@ -233,6 +287,42 @@ const Dashboard = () => {
                 </li>
               ))}
             </ul>
+          </div>
+
+          <div className="bg-white rounded-3xl p-8 shadow-xl border border-[#b8c19a]">
+            <h2 className="text-2xl font-bold text-[#49682d] mb-4">Volunteer Hours (Detailed)</h2>
+            {volunteerHours.length === 0 ? (
+              <p className="text-gray-500 italic">No volunteer hours recorded yet.</p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="min-w-full border text-[#4d5640]">
+                  <thead>
+                    <tr className="bg-[#f5f9e6]">
+                      <th className="px-4 py-2 text-left">Event</th>
+                      <th className="px-4 py-2 text-left">Date</th>
+                      <th className="px-4 py-2 text-left">Time</th>
+                      <th className="px-4 py-2 text-left">Hours</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {volunteerHours.map((vh, i) => (
+                      <tr key={i} className="border-t">
+                        <td className="px-4 py-2">{vh.event?.title || '-'}</td>
+                        <td className="px-4 py-2">{vh.event?.date ? formatDate(vh.event.date) : '-'}</td>
+                        <td className="px-4 py-2">{vh.event?.time || '-'}</td>
+                        <td className="px-4 py-2 font-bold">{vh.hours}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                  <tfoot>
+                    <tr className="bg-[#f5f9e6] font-bold">
+                      <td className="px-4 py-2" colSpan={3}>Total</td>
+                      <td className="px-4 py-2">{totalHours}</td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            )}
           </div>
         </div>
       </div>

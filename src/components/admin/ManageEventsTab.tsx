@@ -15,6 +15,20 @@ const ManageEventsTab = ({ events, startEditEvent, deleteEvent }: any) => {
   const [signedUpUsers, setSignedUpUsers] = useState<any[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(false);
 
+  // Helper to check if event is in the past
+  const isEventPast = (dateStr: string, timeStr?: string) => {
+    if (!dateStr) return false;
+    const eventDate = new Date(dateStr + (timeStr ? 'T' + timeStr : 'T23:59'));
+    return eventDate < new Date();
+  };
+
+  // Volunteer Hours Modal State
+  const [showHoursModal, setShowHoursModal] = useState(false);
+  const [hoursEvent, setHoursEvent] = useState<any>(null);
+  const [hoursData, setHoursData] = useState<{ [userId: string]: number }>({});
+  const [hoursUsers, setHoursUsers] = useState<any[]>([]);
+  const [savingHours, setSavingHours] = useState(false);
+
   const formatDate = (dateStr: string, timeStr?: string) => {
     if (!dateStr) return 'No date';
     const date = new Date(dateStr + (timeStr ? 'T' + timeStr : ''));
@@ -87,6 +101,66 @@ const ManageEventsTab = ({ events, startEditEvent, deleteEvent }: any) => {
     alert(`${field === 'email' ? 'Emails' : 'Phone numbers'} copied!`);
   };
 
+  // Open modal and fetch users for event
+  const handleAddVolunteerHours = async (event: any) => {
+    setHoursEvent(event);
+    setShowHoursModal(true);
+    setSavingHours(false);
+    setHoursData({});
+    // Fetch users signed up for this event
+    const { data, error } = await supabase
+      .from('event_signups')
+      .select('id, user_id, user:users(id, full_name, email)')
+      .eq('event_id', event.id);
+    setHoursUsers(data?.map((s: any) => s.user) || []);
+  };
+
+  // Handle input change
+  const handleHoursChange = (userId: string, value: string) => {
+    setHoursData(prev => ({ ...prev, [userId]: Number(value) }));
+  };
+
+  // Set all hours at once
+  const handleSetAllHours = (value: string) => {
+    const num = Number(value);
+    if (isNaN(num)) return;
+    const newData: { [userId: string]: number } = {};
+    hoursUsers.forEach(user => {
+      newData[user.id] = num;
+    });
+    setHoursData(newData);
+  };
+
+  // Save volunteer hours to Supabase
+  const handleSaveVolunteerHours = async () => {
+    setSavingHours(true);
+    try {
+      const inserts = Object.entries(hoursData)
+        .filter(([_, hours]) => hours > 0)
+        .map(([userId, hours]) => ({
+          event_id: hoursEvent.id,
+          user_id: userId,
+          hours,
+        }));
+      if (inserts.length === 0) {
+        alert('Please enter hours for at least one user.');
+        setSavingHours(false);
+        return;
+      }
+      // Insert or upsert volunteer hours
+      const { error } = await supabase
+        .from('volunteer_hours')
+        .upsert(inserts, { onConflict: 'event_id,user_id' });
+      if (error) throw error;
+      setShowHoursModal(false);
+      alert('Volunteer hours saved!');
+    } catch (err: any) {
+      alert('Error saving hours: ' + err.message);
+    } finally {
+      setSavingHours(false);
+    }
+  };
+
   return (
     <>
       <section className="space-y-4 max-w-4xl mx-auto">
@@ -129,6 +203,14 @@ const ManageEventsTab = ({ events, startEditEvent, deleteEvent }: any) => {
                 >
                   View Users
                 </button>
+                {isEventPast(event.date, event.time) && (
+                  <button
+                    onClick={() => handleAddVolunteerHours(event)}
+                    className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-full text-white font-semibold"
+                  >
+                    Add Volunteer Hours
+                  </button>
+                )}
               </div>
             </div>
           ))
@@ -211,6 +293,66 @@ const ManageEventsTab = ({ events, startEditEvent, deleteEvent }: any) => {
                   );
                 })}
               </ul>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Volunteer Hours Modal */}
+      {showHoursModal && hoursEvent && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-white bg-opacity-80 backdrop-blur-sm p-4">
+          <div className="relative w-full max-w-xl bg-white rounded-3xl shadow-2xl border border-[#cdd1bc] p-8">
+            <button
+              onClick={() => setShowHoursModal(false)}
+              className="absolute top-4 right-6 text-2xl text-gray-600 hover:text-black font-bold"
+            >
+              ×
+            </button>
+            <h2 className="text-2xl font-bold text-[#49682d] mb-4">
+              Add Volunteer Hours for {hoursEvent.title}
+            </h2>
+            {hoursUsers.length === 0 ? (
+              <p className="text-gray-600 italic">No approved users for this event.</p>
+            ) : (
+              <form onSubmit={e => { e.preventDefault(); handleSaveVolunteerHours(); }}>
+                <div className="mb-6 flex items-center gap-4">
+                  <label className="font-semibold">Set hours for all attendees:</label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.5"
+                    className="border rounded px-2 py-1 w-24"
+                    placeholder="Hours"
+                    onChange={e => handleSetAllHours(e.target.value)}
+                  />
+                  <span className="text-gray-500 text-sm">hours</span>
+                </div>
+                <div className="space-y-4 mb-6">
+                  {hoursUsers.map(user => (
+                    <div key={user.id} className="flex items-center gap-4">
+                      <span className="w-40 font-semibold">{user.full_name}</span>
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.5"
+                        className="border rounded px-2 py-1 w-24"
+                        placeholder="Hours"
+                        value={hoursData[user.id] || ''}
+                        onChange={e => handleHoursChange(user.id, e.target.value)}
+                        required
+                      />
+                      <span className="text-gray-500 text-sm">hours</span>
+                    </div>
+                  ))}
+                </div>
+                <button
+                  type="submit"
+                  className="bg-green-700 hover:bg-green-800 text-white px-6 py-2 rounded-full font-semibold"
+                  disabled={savingHours}
+                >
+                  {savingHours ? 'Saving...' : 'Save Hours'}
+                </button>
+              </form>
             )}
           </div>
         </div>
