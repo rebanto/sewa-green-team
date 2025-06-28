@@ -23,7 +23,7 @@ const Dashboard = () => {
   const [logoutMessage, setLogoutMessage] = useState('');
   const [volunteerHours, setVolunteerHours] = useState<any[]>([]);
   const [totalHours, setTotalHours] = useState(0);
-  const [graphPeriod, setGraphPeriod] = useState<'week' | 'month' | 'year'>('month');
+  const [graphPeriod, setGraphPeriod] = useState<'week' | 'month' | 'year'>('week');
   const [graphData, setGraphData] = useState<any[]>([]);
 
   const navigate = useNavigate();
