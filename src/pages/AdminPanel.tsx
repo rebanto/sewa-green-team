@@ -7,6 +7,7 @@ import AllUsersTab from '../components/admin/AllUsersTab';
 import CreateEventTab from '../components/admin/CreateEventTab';
 import ManageEventsTab from '../components/admin/ManageEventsTab';
 import WebsiteDetailsTab from '../components/admin/WebsiteDetailsTab';
+import { useDeletePastEventPDFs } from '../hooks/useDeletePastEventPDFs';
 
 const tabs = ['Pending Users', 'All Users', 'Create Event', 'Manage Events', 'Website Details'];
 
@@ -206,6 +207,36 @@ const AdminPanel = () => {
 
     return list;
   };
+
+  // --- Automated deletion of PDFs for past events ---
+  const deletePastEventPDFs = useDeletePastEventPDFs(
+    'waivers',
+    async () => (events || []).filter(ev => ev.waiver_required && ev.waiver_url && new Date(ev.date) < new Date()),
+    (event) => {
+      // Extract the file path from the public URL
+      try {
+        const url = new URL(event.waiver_url);
+        // Supabase public URL: .../storage/v1/object/public/waivers/<file>
+        const idx = url.pathname.indexOf('/waivers/');
+        if (idx !== -1) {
+          return url.pathname.substring(idx + 1); // 'waivers/<file>'
+        }
+      } catch {}
+      return '';
+    }
+  );
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    if (events.length > 0) {
+      deletePastEventPDFs();
+    }
+    // Only run when events change
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [events]);
 
   if (loading) return <div className="text-center py-20 text-lg">Loading admin panel...</div>;
 
