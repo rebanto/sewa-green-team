@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import Home from './pages/Home';
@@ -40,9 +40,6 @@ function App() {
 }
 
 function AuthRedirector() {
-  const location = useLocation();
-  // Don't run auth redirect logic on /not-allowed
-  if (location.pathname === '/not-allowed') return null;
   useAuthRedirect();
   return null;
 }
