@@ -278,7 +278,7 @@ const Dashboard = () => {
             </ul>
           </div>
 
-          <div className="bg-white rounded-3xl p-6 shadow border border-[#b8c19a]">
+          <div className="bg-white rounded-3xl p-6 shadow-xl border border-[#b8c19a]">
             <h2 className="text-xl font-semibold text-[#49682d] mb-3">Past Events</h2>
             <ul className="text-[#73814f] space-y-1">
               {pastEvents.map(ev => (
