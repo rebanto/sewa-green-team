@@ -55,19 +55,12 @@ const StatsCounter = () => {
   ]
 
   return (
-    <div className="max-w-4xl mx-auto py-16 grid grid-cols-1 sm:grid-cols-3 gap-8 bg-[#fdfdfb] rounded-xl shadow-lg border border-[#e8e8e0]">
+    <div className="max-w-4xl mx-auto py-10 sm:py-16 grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8 bg-[#fdfdfb] rounded-xl shadow-lg border border-[#e8e8e0] px-3 sm:px-0">
       {loading ? (
         <div className="col-span-3 text-center text-gray-500">Loading stats...</div>
       ) : (
         statsArr.map((stat, i) => (
-          <motion.div
-            key={stat.label}
-            initial={{ y: 30, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: i * 0.3, duration: 0.6 }}
-          >
-            <Stat {...stat} />
-          </motion.div>
+          <Stat key={i} {...stat} />
         ))
       )}
     </div>
