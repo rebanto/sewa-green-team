@@ -361,7 +361,7 @@ const EventSignupCount = ({ eventId }: { eventId: string }) => {
     fetchCount();
   }, [eventId]);
 
-  return <p className="mt-4 font-semibold text-[#4d5640]">Signed up users: {count ?? 'Loading...'}</p>;
+  return <p className="mt-4 font-semibold text-[#4d5640]">Signed up volunteeers: {count ?? 'Loading...'}</p>;
 };
 
 export default Dashboard;

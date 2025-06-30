@@ -172,17 +172,19 @@ const About = () => {
         viewport={{ once: true }}
         variants={fadeUp}
       >
-        <h2 className="text-3xl font-bold text-[#8a9663] mb-12">Meet Our Leadership</h2>
+        <h2 className="text-3xl font-bold text-[#8a9663] mb-12 justify-center place-items-center">Meet Our Leadership</h2>
         {loading ? (
           <div>Loading leadership...</div>
         ) : leadership.length === 0 ? (
           <div>No leadership roles found.</div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 max-w-6xl mx-auto">
+          <div
+            className="flex flex-wrap justify-center gap-10 max-w-6xl mx-auto"
+          >
             {leadership.map((leader, index) => (
               <motion.div
                 key={leader.name + leader.role}
-                className="bg-white/50 backdrop-blur-md border border-[#cdd1bc] rounded-2xl shadow-lg p-6 flex flex-col items-center text-center transition-all hover:scale-105"
+                className="w-72 bg-white/50 backdrop-blur-md border border-[#cdd1bc] rounded-2xl shadow-lg p-6 flex flex-col items-center text-center transition-all hover:scale-105"
                 variants={fadeUp}
                 custom={index + 1}
               >
