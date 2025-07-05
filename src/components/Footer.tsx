@@ -1,8 +1,8 @@
-import { FaInstagram, FaLinkedinIn, FaLink, FaExternalLinkAlt } from 'react-icons/fa';
+import { FaInstagram, FaLinkedinIn, FaLink, FaExternalLinkAlt, FaHeart } from 'react-icons/fa';
 
 const Footer = () => {
   return (
-    <footer className="relative bg-gradient-to-tr from-[#8a9663] via-[#858d6a] to-[#8a9663] text-white py-12 px-6 overflow-hidden select-none">
+    <footer className="relative bg-gradient-to-tr from-[#8a9663] via-[#858d6a] to-[#8a9663] text-white py-12 px-12 overflow-hidden select-none">
       <div className="relative max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6 md:gap-0">
         {/* Left Text */}
         <div>
@@ -47,20 +47,20 @@ const Footer = () => {
       </div>
 
       {/* Bottom Text */}
-      <p className="mt-10 text-center text-white/80 text-sm select-text">
-        © {new Date().getFullYear()} Sewa Green Team | Built with 💚 by
-        <span className="font-bold text-white underline underline-offset-2 ml-1 hover:text-yellow-100 transition-colors duration-200">
-          <a
-            href="https://www.linkedin.com/company/phoenixtechsolutions"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1"
-          >
-            Phoenix Tech Solutions
-            <FaExternalLinkAlt className="inline-block text-xs mb-[2px]" />
-          </a>
-        </span>
-      </p>
+    <p className="mt-10 text-center text-white/80 text-sm select-text flex items-center justify-center gap-1 flex-wrap">
+      © {new Date().getFullYear()} Sewa Green Team | Built with <FaHeart className="inline-block mx-0.5" /> by{" "}
+      <span className="font-bold text-white underline underline-offset-2 hover:text-yellow-100 transition-colors duration-200">
+        <a
+        href="https://www.linkedin.com/company/phoenixtechsolutions"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-flex items-center gap-1"
+        >
+        Phoenix Tech Solutions
+        <FaExternalLinkAlt className="inline-block text-xs mb-[2px]" />
+        </a>
+      </span>
+    </p>
     </footer>
   );
 };
