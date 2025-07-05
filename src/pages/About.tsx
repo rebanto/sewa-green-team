@@ -81,7 +81,7 @@ const About = () => {
   }, []);
 
   return (
-    <div className="overflow-x-hidden">
+    <div className="overflow-x-hidden mt-30">
       {/* Intro */}
       <motion.section
         initial="hidden"
@@ -116,7 +116,7 @@ const About = () => {
               <motion.div
                 key={item.year}
                 className={`relative w-full md:w-1/2 px-6 py-6 rounded-xl bg-white/40 backdrop-blur-md shadow-md border border-[#cdd1bc] transition-all hover:scale-105 ${
-                  index % 2 === 0 ? "ml-auto" : "mr-auto"
+                  index % 2 === 0 ? "ml-auto -translate-x-5" : "mr-auto translate-x-5"
                 }`}
                 initial="hidden"
                 whileInView="visible"
@@ -150,11 +150,11 @@ const About = () => {
           {pillars.map((pillar, index) => (
             <motion.div
               key={pillar.title}
-              className="rounded-2xl p-8 bg-white/50 backdrop-blur-md shadow-md border border-[#cdd1bc] transition-all hover:scale-105"
+              className="rounded-2xl p-8 bg-white/50 backdrop-blur-md shadow-md border border-[#cdd1bc] transition-all hover:scale-105 flex flex-col justify-center"
               variants={fadeUp}
               custom={index + 1}
             >
-              {pillar.icon}
+              <div className="flex justify-center">{pillar.icon}</div>
               <h3 className="text-xl font-bold text-[#8a9663] mb-2">
                 {pillar.title}
               </h3>
