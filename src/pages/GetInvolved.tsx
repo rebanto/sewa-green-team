@@ -270,6 +270,7 @@ const GetInvolved = () => {
           {!isLogin && (
             <>
               <select
+                title="Role select"
                 name="role"
                 onChange={handleChange}
                 value={formData.role}
