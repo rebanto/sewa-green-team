@@ -21,14 +21,14 @@ const initiatives = [
     title: 'Adopt-A-Mile Road Program',
     description:
       'In partnership with Sewa International, we’ve taken full responsibility for a local roadway—ensuring it stays clean and green through regular maintenance drives.',
-    icon: <FaRoad className="text-[#dba979] text-3xl" />, // Clay yellow
+    icon: <FaRoad className="text-[#dba979] text-3xl" />,
     image: '/hero_bg.jpg',
   },
 ];
 
 export default function Initiatives() {
   return (
-    <section className="relative w-full bg-gradient-to-br from-white via-[#ebe7d9] to-[#e2c5a9] px-6 pt-40">
+    <section className="relative w-full bg-gradient-to-br from-white via-[#ebe7d9] to-[#e2c5a9] px-6 pt-10">
       <motion.div
         initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
@@ -44,7 +44,7 @@ export default function Initiatives() {
           responsibility, and youth-led energy.
         </p>
 
-        <div className="flex flex-col space-y-16">
+        <div className="flex flex-col space-y-16 pb-10">
           {initiatives.map((item, index) => (
             <motion.div
               key={index}
