@@ -4,7 +4,7 @@ const ANNOUNCEMENT_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSfcc4wO22BuUI
 
 export default function AnnouncementBar() {
   return (
-    <div className="w-full bg-gradient-to-r from-green-600 via-green-500 to-green-400 text-white px-4 py-2 flex items-center justify-center shadow-md relative z-30">
+    <div className="w-full bg-gradient-to-r from-green-800 via-green-700 to-green-600 text-white px-4 py-2 flex items-center justify-center shadow-md relative z-30">
       <span className="hidden sm:inline mr-4 font-semibold text-sm md:text-base">
         Join the Sewa Green Team! Applications are now open for passionate individuals who want to make a difference.
       </span>
