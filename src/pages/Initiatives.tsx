@@ -3,8 +3,7 @@ import { motion } from "framer-motion";
 import { FaTree, FaWater, FaRoad } from "react-icons/fa";
 
 const initiatives = [
-	{
-		title: "Chattahoochee River Cleanup",
+title: "Chattahoochee River Cleanup",
 		description:
 			"Our flagship cleanup effort along the Jones Bridge corridor—protecting water quality, preserving native ecosystems, and raising awareness about Georgia's most vital watershed.",
 		icon: <FaWater className="text-[#6ca0dc] text-3xl" />, // River blue
@@ -28,7 +27,7 @@ const initiatives = [
 
 export default function Initiatives() {
 	return (
-		<section className="relative w-full bg-gradient-to-br from-white via-[#ebe7d9] to-[#e2c5a9] px-6 py-40">
+		<section className="relative w-full bg-gradient-to-br from-white via-[#ebe7d9] to-[#e2c5a9] px-6 pt-10 pb-16">
 			<motion.div
 				initial={{ opacity: 0, y: 40 }}
 				animate={{ opacity: 1, y: 0 }}
