@@ -1,60 +1,50 @@
 import { useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useAuth } from "../context/auth/AuthContext";
 import { supabase } from "../lib/supabaseClient";
 
 export const useAuthRedirect = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
+	const { user, session } = useAuth();
+	const navigate = useNavigate();
+	const location = useLocation();
 
-  useEffect(() => {
-    // Only run redirect logic on protected routes, but NOT on /not-allowed
-    const protectedRoutes = ["/dashboard", "/admin"];
-    if (!protectedRoutes.includes(location.pathname) || location.pathname === "/not-allowed")
-      return;
+	useEffect(() => {
+		const protectedRoutes = ["/dashboard", "/admin"];
+		const { pathname } = location;
 
-    const getStatusAndRedirect = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
+		if (!protectedRoutes.includes(pathname)) return;
 
-      if (!session?.user) {
-        // Not logged in, show NotAllowed page
-        if (location.pathname !== "/not-allowed") navigate("/not-allowed");
-        return;
-      }
+		// If auth isn't ready yet, skip redirect
+		if (session === undefined) return;
 
-      const { data: userRecord, error } = await supabase
-        .from("users")
-        .select("status")
-        .eq("id", session.user.id)
-        .single();
+		(async () => {
+			if (!user) {
+				return pathname !== "/not-allowed" && navigate("/not-allowed");
+			}
 
-      if (error) {
-        console.error("User lookup failed:", error.message);
-        if (location.pathname !== "/not-allowed") navigate("/not-allowed");
-        return;
-      }
+			// Fetch user's status from DB
+			const { data: userRecord, error } = await fetchStatus(user.id);
+			if (error || !userRecord) {
+				console.error("User lookup failed:", error?.message);
+				return pathname !== "/not-allowed" && navigate("/not-allowed");
+			}
 
-      if (userRecord.status === "APPROVED") {
-        // Only redirect to dashboard if not already on dashboard or admin
-        if (location.pathname !== "/dashboard" && location.pathname !== "/admin") navigate("/dashboard");
-      } else {
-        if (location.pathname !== "/not-approved") navigate("/not-approved");
-      }
-    };
-
-    getStatusAndRedirect();
-
-    const { data: authListener } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        if (event === "SIGNED_IN" && session?.user) {
-          getStatusAndRedirect();
-        }
-      }
-    );
-
-    return () => {
-      authListener?.subscription.unsubscribe();
-    };
-  }, [navigate, location]);
+			if (userRecord.status === "APPROVED") {
+				if (pathname === "/not-approved") navigate("/dashboard");
+			} else {
+				if (pathname !== "/not-approved") navigate("/not-approved");
+			}
+		})();
+	}, [user, session, location, location.pathname, navigate]);
 };
+
+// Helper to fetch status
+async function fetchStatus(userId: string) {
+	const { data, error } = await supabase
+		.from("users")
+		.select("status")
+		.eq("id", userId)
+		.single();
+
+	return { data, error };
+}
