@@ -1,101 +1,12 @@
 import { motion } from 'framer-motion';
-import { Link, useLocation } from 'react-router-dom';
-import { Canvas, useFrame } from '@react-three/fiber';
-import { useRef, useMemo, useEffect, useState } from 'react';
-import * as THREE from 'three';
+import { Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import { FaLeaf, FaHandsHelping, FaGlobeAmericas } from 'react-icons/fa';
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.7 } },
 };
-
-// --- Leaves Animation ---
-function createEmojiTexture(emoji: string, size = 128) {
-  const canvas = document.createElement('canvas');
-  canvas.width = size;
-  canvas.height = size;
-  const ctx = canvas.getContext('2d')!;
-  ctx.font = `${size * 0.8}px serif`;
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.clearRect(0, 0, size, size);
-  ctx.fillText(emoji, size / 2, size / 2);
-  const texture = new THREE.CanvasTexture(canvas);
-  texture.minFilter = THREE.LinearFilter;
-  texture.magFilter = THREE.LinearFilter;
-  texture.needsUpdate = true;
-  return texture;
-}
-
-function Leaf({ index, total }: { index: number; total: number }) {
-  const mesh = useRef<THREE.Mesh>(null);
-  const texture = useMemo(() => createEmojiTexture('🥬', 128), []);
-
-  const baseRadius = 2;
-  const radiusVariation = 2.0;
-  const speed = useMemo(() => 2 + Math.random() * 1.5, []);
-  const verticalAmplitude = useMemo(() => 0.5 + Math.random() * 0.7, []);
-  const swirlFrequency = useMemo(() => 0.7 + Math.random() * 0.8, []);
-  const flutterSpeedX = useMemo(() => 3 + Math.random() * 3, []);
-  const flutterSpeedY = useMemo(() => 2 + Math.random() * 3, []);
-  const flutterSpeedZ = useMemo(() => 4 + Math.random() * 4, []);
-  const phase = useMemo(() => Math.random() * Math.PI * 2, []);
-  const angleOffset = useMemo(() => Math.random() * Math.PI * 2, []);
-  const radiusOffset = useMemo(() => Math.random() * 0.8, []);
-
-  const lastUpdate = useRef(0);
-  useFrame(({ clock }) => {
-    if (!mesh.current) return;
-    const t = clock.getElapsedTime();
-    if (t - lastUpdate.current < 0.033) return;
-    lastUpdate.current = t;
-
-    const angle = (index / total) * Math.PI * 2 + t * speed + angleOffset;
-    const radius = baseRadius + radiusOffset + radiusVariation * Math.sin(t * swirlFrequency + phase + index);
-    const x = Math.cos(angle) * radius * 1.35;
-    const y = Math.sin(angle) * radius * 0.5 + Math.sin(t * 3 + phase) * verticalAmplitude;
-    const z = Math.sin(t * 2.5 + phase) * 0.25;
-    const jitterX = 0.15 * Math.sin(t * 5 + phase * 7 + index);
-    const jitterY = 0.15 * Math.cos(t * 4 + phase * 9 + index);
-    mesh.current.position.set(x + jitterX, y + jitterY, z);
-    mesh.current.rotation.x = 0.5 * Math.sin(t * flutterSpeedX + phase);
-    mesh.current.rotation.y = 0.4 * Math.cos(t * flutterSpeedY + phase * 1.3);
-    mesh.current.rotation.z = angle + Math.sin(t * flutterSpeedZ + phase) * 0.7;
-  });
-
-  return (
-    <mesh ref={mesh} castShadow receiveShadow>
-      <planeGeometry args={[1.1, 1.1]} />
-      <meshBasicMaterial
-        map={texture}
-        transparent
-        opacity={1}
-        side={THREE.DoubleSide}
-        depthTest={false}
-      />
-    </mesh>
-  );
-}
-
-function LeafCluster() {
-  const group = useRef<THREE.Group>(null);
-  useFrame(({ clock }) => {
-    if (!group.current) return;
-    const t = clock.getElapsedTime();
-    group.current.rotation.z = t * 0.7;
-    group.current.rotation.x = Math.sin(t / 3) * 0.08;
-    group.current.rotation.y = Math.cos(t / 3) * 0.08;
-  });
-  const totalLeaves = 4;
-  return (
-    <group ref={group} position={[0, 0, 0]}>
-      {[...Array(totalLeaves)].map((_, i) => (
-        <Leaf key={i} index={i} total={totalLeaves} />
-      ))}
-    </group>
-  );
-}
 
 // --- Info Cards ---
 const infoCards = [
@@ -161,9 +72,8 @@ const MobileInfoImpactSection = ({ infoCards }: { infoCards: InfoCard[] }) => (
 );
 
 const InfoImpactSection = () => {
-  const location = useLocation();
-  const isHome = location.pathname === '/';
-  const [showLeaves, setShowLeaves] = useState(true);
+  // const location = useLocation();
+  // const [showLeaves, setShowLeaves] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
@@ -172,37 +82,6 @@ const InfoImpactSection = () => {
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
-
-  useEffect(() => {
-    if (!isHome) return;
-    let frame = 0;
-    let last = performance.now();
-    let lowFpsCount = 0;
-    let running = true;
-    function checkFps(now: number) {
-      if (!running) return;
-      frame++;
-      if (frame >= 20) {
-        const elapsed = now - last;
-        const fps = 1000 * frame / elapsed;
-        if (fps < 30) {
-          lowFpsCount++;
-        } else {
-          lowFpsCount = 0;
-        }
-        if (lowFpsCount >= 2) {
-          setShowLeaves(false);
-          running = false;
-          return;
-        }
-        frame = 0;
-        last = now;
-      }
-      requestAnimationFrame(checkFps);
-    }
-    requestAnimationFrame(checkFps);
-    return () => { running = false; };
-  }, [isHome]);
 
   return (
     <>
@@ -223,16 +102,6 @@ const InfoImpactSection = () => {
           </p>
 
           <div className="w-full max-w-6xl mx-auto h-48 xs:h-56 sm:h-80 md:h-[28rem] mb-10 sm:mb-14 flex items-center justify-center relative">
-            {isHome && showLeaves && !isMobile && (
-              <div className="absolute inset-0 w-full h-full z-0 pointer-events-none">
-                <Canvas shadows camera={{ position: [0, 0, 11], fov: 50 }} style={{ width: '100%', height: '100%' }}>
-                  <ambientLight intensity={0.7} />
-                  <directionalLight position={[2, 5, 5]} intensity={1.1} castShadow />
-                  <LeafCluster />
-                </Canvas>
-              </div>
-            )}
-
             <motion.div
               className="relative z-10 w-full max-w-4xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-10 text-center px-2 xs:px-4"
               variants={fadeUp}
