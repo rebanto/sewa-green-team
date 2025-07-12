@@ -1,28 +1,28 @@
 import Tilt from 'react-parallax-tilt';
 import { motion } from 'framer-motion';
-import { FaTree, FaWater, FaRoad } from 'react-icons/fa';
+import { FaTree, FaWater, FaLeaf } from 'react-icons/fa';
 
 const initiatives = [
   {
-    title: 'Chattahoochee River Cleanup',
+    title: 'SGT River Cleaning  Committee',
     description:
-      "Our flagship cleanup effort along the Jones Bridge corridor—protecting water quality, preserving native ecosystems, and raising awareness about Georgia's most vital watershed.",
+      "Sewa Green Team partnered with the National Park Service to clean the Chattahoochee River, removing an average of 300 lbs of trash per cleanup to protect local wildlife and preserve natural spaces.",
     icon: <FaWater className="text-[#6ca0dc] text-3xl" />, // River blue
-    image: '/hero_bg.jpg',
+    image: '/river_cleaning.JPG',
   },
   {
-    title: 'Park & Beach Cleanups',
+    title: 'SGT Tree Planting Committee',
     description:
-      'Across counties like Forsyth, Dekalb, and Fulton, our youth volunteers restore degraded parks, lakeshores, and trails—one bag of trash at a time.',
+      'In collaboration with Trees Atlanta, Sewa Green Team helps plant and care for native trees across Metro Atlanta.',
     icon: <FaTree className="text-[#8a9663] text-3xl" />, // Earthy olive
-    image: '/hero_bg.jpg',
+    image: '/tree_planting.png',
   },
   {
-    title: 'Adopt-A-Mile Road Program',
+    title: 'SGT Sustainability Committee',
     description:
-      'In partnership with Sewa International, we’ve taken full responsibility for a local roadway—ensuring it stays clean and green through regular maintenance drives.',
-    icon: <FaRoad className="text-[#dba979] text-3xl" />,
-    image: '/hero_bg.jpg',
+      'To make large community events more eco-friendly, Sewa Green Team partners with organizers to implement waste reduction, recycling, and sustainable practices at festivals like Holi and Sewa’s 5K.',
+    icon: <FaLeaf className="text-[#dba979] text-3xl" />,
+    image: '/sustainability.jpg',
   },
 ];
 
