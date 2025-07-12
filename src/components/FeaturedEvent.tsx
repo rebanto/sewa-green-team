@@ -7,23 +7,44 @@ const FeaturedEvent = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchLatestEvent = async () => {
+    const fetchFeaturedEvent = async () => {
       setLoading(true);
       setError(null);
-      const { data, error } = await supabase
-        .from("events")
-        .select("id,title,description,date")
-        .order("date", { ascending: false })
-        .limit(1)
+      // 1. Get featured_event_id from website_details
+      const { data: websiteDetails } = await supabase
+        .from('website_details')
+        .select('featured_event_id')
         .single();
-      if (error) {
-        setError("Failed to load event.");
+      let eventData = null;
+      let eventError = null;
+      if (websiteDetails?.featured_event_id) {
+        // 2. Fetch the event with that ID
+        const { data, error } = await supabase
+          .from('events')
+          .select('id,title,description,date')
+          .eq('id', websiteDetails.featured_event_id)
+          .single();
+        eventData = data;
+        eventError = error;
       } else {
-        setEvent(data);
+        // 3. Fallback: fetch latest event
+        const { data, error } = await supabase
+          .from('events')
+          .select('id,title,description,date')
+          .order('date', { ascending: false })
+          .limit(1)
+          .single();
+        eventData = data;
+        eventError = error;
+      }
+      if (eventError) {
+        setError('Failed to load event.');
+      } else {
+        setEvent(eventData);
       }
       setLoading(false);
     };
-    fetchLatestEvent();
+    fetchFeaturedEvent();
   }, []);
 
   if (loading) {

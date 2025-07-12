@@ -23,9 +23,15 @@ const WebsiteDetailsTab = () => {
   const [newLeader, setNewLeader] = useState<Leader>({ name: '', role: '', image_url: '' });
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
+  // Featured Event State
+  const [events, setEvents] = useState<any[]>([]);
+  const [featuredEventId, setFeaturedEventId] = useState<string | null>(null);
+  const [featuredSaving, setFeaturedSaving] = useState(false);
+
   useEffect(() => {
     const fetchStats = async () => {
       setLoading(true);
+      // Fetch website details
       const { data } = await supabase
         .from('website_details')
         .select('*')
@@ -33,12 +39,38 @@ const WebsiteDetailsTab = () => {
       if (data) {
         setStats(data);
         setLeadership(data.leadership || []);
+        setFeaturedEventId(data.featured_event_id || null);
       }
       setLoading(false);
       setLeadershipLoading(false);
     };
+    // Fetch events for featured event selection
+    const fetchEvents = async () => {
+      const { data } = await supabase
+        .from('events')
+        .select('id,title,date')
+        .order('date', { ascending: false });
+      setEvents(data || []);
+    };
     fetchStats();
+    fetchEvents();
   }, []);
+  // Handle featured event selection
+  const handleFeaturedEventChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setFeaturedEventId(e.target.value);
+  };
+
+  const handleSaveFeaturedEvent = async () => {
+    if (!featuredEventId) return alert('Please select an event to feature.');
+    setFeaturedSaving(true);
+    const { error } = await supabase
+      .from('website_details')
+      .update({ featured_event_id: featuredEventId })
+      .eq('id', 1);
+    setFeaturedSaving(false);
+    if (error) return alert('Failed to save featured event: ' + error.message);
+    alert('Featured event updated!');
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -68,7 +100,7 @@ const WebsiteDetailsTab = () => {
     if (!file) return;
     const fileExt = file.name.split('.').pop();
     const fileName = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${fileExt}`;
-    const { data, error } = await supabase.storage.from('leadership').upload(fileName, file);
+    const { error } = await supabase.storage.from('leadership').upload(fileName, file);
     if (error) {
       alert('Image upload failed: ' + error.message);
       return;
@@ -198,6 +230,32 @@ const WebsiteDetailsTab = () => {
           {saving ? 'Saving...' : 'Save Changes'}
         </button>
       </form>
+
+      {/* Featured Event Selection */}
+      <div className="max-w-2xl mx-auto bg-white p-8 rounded-xl shadow space-y-6 mt-12">
+        <h2 className="text-2xl font-bold mb-4 text-[#8a9663]">Select Featured Event</h2>
+        <div className="flex flex-col sm:flex-row items-center gap-4">
+          <select
+            className="border rounded px-3 py-2 w-full sm:w-2/3"
+            value={featuredEventId || ''}
+            onChange={handleFeaturedEventChange}
+          >
+            <option value="">-- Select an event --</option>
+            {events.map(ev => (
+              <option key={ev.id} value={ev.id}>
+                {ev.title} {ev.date ? `(${new Date(ev.date).toLocaleDateString()})` : ''}
+              </option>
+            ))}
+          </select>
+          <button
+            onClick={handleSaveFeaturedEvent}
+            className="bg-[#8a9663] hover:bg-[#6d7a4e] text-white px-6 py-2 rounded-full font-semibold"
+            disabled={featuredSaving}
+          >
+            {featuredSaving ? 'Saving...' : 'Save Featured Event'}
+          </button>
+        </div>
+      </div>
 
       {/* Leadership Management */}
       <div className="max-w-2xl mx-auto bg-white p-8 rounded-xl shadow space-y-6 mt-12">
