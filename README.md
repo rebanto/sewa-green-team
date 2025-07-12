@@ -1,6 +1,6 @@
 # Sewa Green Team Website
 
-Welcome to the Sewa Green Team website! This is a modern, responsive web application built with React, TypeScript, Vite, and Supabase. The platform is designed to showcase the Sewa Green Team's initiatives, events, and community impact, while providing a seamless experience for both visitors and administrators.
+Welcome to the Sewa Green Team website! This is a modern, responsive web application built with React, TypeScript, Vite, and Supabase. The platform is designed to showcase the Sewa Green Team's initiatives, events, and community impact, and manage volunteers.
 
 ## Features
 
@@ -16,8 +16,6 @@ Welcome to the Sewa Green Team website! This is a modern, responsive web applica
 
 - **Frontend:** React, TypeScript, Vite
 - **Styling:** Tailwind CSS
-- **Animations:** Framer Motion
-- **Icons:** Lucide React
 - **Backend & Auth:** Supabase
 
 ## Project Structure
