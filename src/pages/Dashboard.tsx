@@ -12,6 +12,7 @@ import {
   ResponsiveContainer,
   Legend,
 } from "recharts";
+import { X, Calendar, MapPin, FileText, Clock } from "lucide-react";
 
 const Dashboard = () => {
   const { user, loading: authLoading, signOut } = useAuth();
@@ -67,11 +68,59 @@ const Dashboard = () => {
       if (userInfo.status !== "APPROVED") return navigate("/not-approved");
       setUserData(userInfo);
 
-      const { data: eventData } = await supabase
-        .from("events")
-        .select("*")
-        .order("date", { ascending: true });
-      setEvents(eventData || []);
+      // Get all files once to avoid repeated API calls
+      try {
+        // Get all events
+        const { data: eventData, error: eventError } = await supabase
+          .from("events")
+          .select("*")
+          .order("date", { ascending: true });
+
+        if (eventError) throw eventError;
+
+        if (!eventData || eventData.length === 0) {
+          setEvents([]);
+          return;
+        }
+
+        // Get all images from storage
+        const { data: allImages, error: imageError } = await supabase.storage
+          .from("events")
+          .list("images", { limit: 1000 });
+
+        if (imageError) throw imageError;
+
+        // Create image map for efficient lookup
+        const imageMap = new Map(allImages.map((image) => [image.id, image]));
+
+        // Merge events with their corresponding images
+        const eventsWithImages = eventData.map((event) => {
+          if (!event.image_id || !imageMap.has(event.image_id)) {
+            return {
+              ...event,
+              image: null,
+              imageUrl: null,
+            };
+          }
+
+          const image = imageMap.get(event.image_id);
+          const {
+            data: { publicUrl },
+          } = supabase.storage.from("events/images").getPublicUrl(image!.name);
+
+          return {
+            ...event,
+            image,
+            imageUrl: publicUrl,
+          };
+        });
+
+        console.log("Events with images:", eventsWithImages);
+        setEvents(eventsWithImages || []);
+      } catch (error) {
+        console.error("Error fetching events with images:", error);
+        setEvents([]);
+      }
 
       const { data: signups } = await supabase
         .from("event_signups")
@@ -375,40 +424,11 @@ const Dashboard = () => {
 
       {/* Modal */}
       {showEventModal && selectedEvent && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-          <div className="bg-white w-[90vw] sm:w-full max-w-2xl max-h-[85vh] overflow-y-auto rounded-3xl p-6 sm:p-8 relative shadow-2xl border border-[#b8c19a]">
-            <button
-              onClick={() => setShowEventModal(false)}
-              className="absolute top-4 right-6 text-2xl text-gray-700 hover:text-black font-bold"
-            >
-              ×
-            </button>
-            <h3 className="text-3xl font-serif font-bold text-[#49682d] mb-4">
-              {selectedEvent.title}
-            </h3>
-            <p className="text-[#4d5640] mb-3">{selectedEvent.description}</p>
-            <p className="text-sm text-gray-600 mb-1">
-              Date: {formatDate(selectedEvent.date)}{" "}
-              {selectedEvent.time && `at ${selectedEvent.time}`}
-            </p>
-            <p className="text-sm text-gray-600 mb-3">Location: {selectedEvent.location}</p>
-            <p className="text-sm font-semibold">
-              Waiver Required: {selectedEvent.waiver_required ? "Yes" : "No"}
-            </p>
-            {selectedEvent.waiver_required &&
-              selectedEvent.waiver_url &&
-              selectedEvent.date >= new Date().toISOString().split("T")[0] && (
-                <p className="text-xs mt-1 text-red-700 font-semibold">
-                  This event requires a signed waiver.{" "}
-                  <a href={selectedEvent.waiver_url} download className="underline text-blue-700">
-                    Download Waiver PDF
-                  </a>{" "}
-                  and bring a signed copy in person.
-                </p>
-              )}
-            <EventSignupCount eventId={selectedEvent.id} />
-          </div>
-        </div>
+        <EventModal
+          selectedEvent={selectedEvent}
+          setShowEventModal={setShowEventModal}
+          formatDate={formatDate}
+        />
       )}
     </div>
   );
@@ -431,6 +451,108 @@ const EventSignupCount = ({ eventId }: { eventId: string }) => {
     <p className="mt-4 font-semibold text-[#4d5640]">
       Signed up volunteeers: {count ?? "Loading..."}
     </p>
+  );
+};
+
+const EventModal = ({ selectedEvent, setShowEventModal, formatDate }) => {
+  const isUpcomingEvent = selectedEvent.date >= new Date().toISOString().split("T")[0];
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4">
+      <div className="bg-white w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl shadow-2xl border border-[#b8c19a] animate-in fade-in duration-200">
+        {/* Header */}
+        <div className="sticky top-0 bg-white border-b border-gray-100 px-6 py-4 rounded-t-2xl">
+          <div className="flex justify-between items-start">
+            <h3 className="text-2xl font-bold text-[#49682d] pr-8 leading-tight">
+              {selectedEvent.title}
+            </h3>
+            <button
+              onClick={() => setShowEventModal(false)}
+              className="flex-shrink-0 p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
+              aria-label="Close modal"
+            >
+              <X size={24} />
+            </button>
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="p-6 space-y-6">
+          {/* Event Image */}
+          {selectedEvent.image && (
+            <div className="relative w-full h-64 rounded-xl overflow-hidden shadow-lg">
+              <img
+                src={selectedEvent.imageUrl || ""}
+                alt={selectedEvent.title}
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
+            </div>
+          )}
+
+          {/* Description */}
+          {selectedEvent.description && (
+            <div>
+              <p className="text-[#4d5640] leading-relaxed">{selectedEvent.description}</p>
+            </div>
+          )}
+
+          {/* Event Details */}
+          <div className="grid gap-4">
+            {/* Date & Time */}
+            <div className="flex items-start gap-3">
+              <Calendar className="text-[#49682d] mt-0.5 flex-shrink-0" size={18} />
+              <p className="font-medium text-gray-900">{formatDate(selectedEvent.date)}</p>
+            </div>
+            {selectedEvent.time && (
+              <div className="flex items-start gap-3">
+                <Clock className="text-[#49682d] mt-0.5 flex-shrink-0" size={18} />
+                <p className="font-medium text-gray-900">{selectedEvent.time}</p>
+              </div>
+            )}
+
+            {/* Location */}
+            <div className="flex items-start gap-3">
+              <MapPin className="text-[#49682d] mt-0.5 flex-shrink-0" size={18} />
+              <p className="text-gray-900">{selectedEvent.location}</p>
+            </div>
+
+            {/* Waiver Info */}
+            <div className="flex items-start gap-3">
+              <FileText className="text-[#49682d] mt-0.5 flex-shrink-0" size={18} />
+              <div>
+                <p className="font-medium text-gray-900">
+                  Waiver Required: {selectedEvent.waiver_required ? "Yes" : "No"}
+                </p>
+
+                {selectedEvent.waiver_required && selectedEvent.waiver_url && isUpcomingEvent && (
+                  <div className="mt-2 p-3 bg-red-50 rounded-lg border border-red-200">
+                    <p className="text-sm text-red-800 font-medium mb-2">⚠️ Waiver Required</p>
+                    <p className="text-sm text-red-700 mb-2">
+                      This event requires a signed waiver. Please download, sign, and bring a copy
+                      with you.
+                    </p>
+                    <a
+                      href={selectedEvent.waiver_url}
+                      download
+                      className="inline-flex items-center gap-1 text-sm font-medium text-blue-700 hover:text-blue-800 underline"
+                    >
+                      <FileText size={14} />
+                      Download Waiver PDF
+                    </a>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Signup Count Component */}
+          <div className="pt-4 border-t border-gray-100">
+            <EventSignupCount eventId={selectedEvent.id} />
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
 
