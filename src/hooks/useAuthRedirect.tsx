@@ -4,7 +4,7 @@ import { useAuth } from "../context/auth/AuthContext";
 import { supabase } from "../lib/supabaseClient";
 
 export const useAuthRedirect = () => {
-	const { user, session } = useAuth();
+	const { user, session, loading } = useAuth();
 	const navigate = useNavigate();
 	const location = useLocation();
 
@@ -15,7 +15,7 @@ export const useAuthRedirect = () => {
 		if (!protectedRoutes.includes(pathname)) return;
 
 		// If auth isn't ready yet, skip redirect
-		if (session === undefined) return;
+		if (loading) return;
 
 		(async () => {
 			if (!user) {
@@ -35,7 +35,7 @@ export const useAuthRedirect = () => {
 				if (pathname !== "/not-approved") navigate("/not-approved");
 			}
 		})();
-	}, [user, session, location, location.pathname, navigate]);
+	}, [user, session, loading, location, location.pathname, navigate]);
 };
 
 // Helper to fetch status

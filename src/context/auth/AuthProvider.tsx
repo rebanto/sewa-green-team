@@ -11,12 +11,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 	useEffect(() => {
 		// Initialize session & user
 		const init = async () => {
-			const {
-				data: { session },
-			} = await supabase.auth.getSession();
-			setSession(session);
-			setUser(session?.user ?? null);
-			setLoading(false);
+			try {
+				const {
+					data: { session },
+				} = await supabase.auth.getSession();
+				setSession(session);
+				setUser(session?.user ?? null);
+			} catch (error) {
+				console.error("Error getting session:", error);
+				setSession(null);
+				setUser(null);
+			} finally {
+				setLoading(false);
+			}
 		};
 		init();
 
@@ -25,6 +32,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 			(_event, session) => {
 				setSession(session);
 				setUser(session?.user ?? null);
+				setLoading(false); // Ensure loading is false when auth state changes
 			}
 		);
 
