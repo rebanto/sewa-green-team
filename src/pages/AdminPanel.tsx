@@ -36,6 +36,7 @@ const AdminPanel = () => {
     location: "",
     waiver_required: false,
     waiver_url: "",
+    image_id: "",
   });
 
   const navigate = useNavigate();
@@ -117,11 +118,12 @@ const AdminPanel = () => {
 
   // Create or update event
   // Prevent editing a past event to a future date
-  const saveEvent = async (e: React.FormEvent, waiverFile?: File) => {
+  const saveEvent = async (e: React.FormEvent, waiverFile?: File, imageFile?: File) => {
     e.preventDefault();
     const eventId = eventForm.id ? String(eventForm.id) : "";
     const formattedDate = eventForm.date ? eventForm.date.split("T")[0] : "";
     let waiver_url = eventForm.waiver_url || "";
+    let image_id = eventForm.image_id || "";
     const now = new Date().toISOString().split("T")[0];
     if (eventId) {
       // Editing an existing event
@@ -145,6 +147,28 @@ const AdminPanel = () => {
       const { data: publicUrlData } = supabase.storage.from("waivers").getPublicUrl(fileName);
       waiver_url = publicUrlData.publicUrl;
     }
+
+    if (imageFile) {
+      // Upload image to Supabase Storage
+      const fileExt = imageFile.name.split(".").pop();
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 11)}.${fileExt}`;
+      const { data, error } = await supabase.storage
+        .from("events")
+        .upload(`images/${fileName}`, imageFile, { upsert: true });
+      if (error) return alert("Failed to upload event image: " + error.message);
+
+      // Get the file info to extract the ID
+      const { data: fileData, error: fileError } = await supabase.storage
+        .from("events")
+        .list("images", { search: fileName });
+
+      if (fileError || !fileData || fileData.length === 0) {
+        return alert("Failed to get uploaded file information");
+      }
+
+      // Use the file ID from the uploaded file
+      image_id = fileData[0].id;
+    }
     const eventData = {
       title: eventForm.title,
       description: eventForm.description,
@@ -153,6 +177,7 @@ const AdminPanel = () => {
       location: eventForm.location,
       waiver_required: eventForm.waiver_required,
       waiver_url: eventForm.waiver_required ? waiver_url : "",
+      image_id: image_id || null,
     };
     if (eventId) {
       const { data, error } = await supabase
@@ -176,6 +201,7 @@ const AdminPanel = () => {
       location: "",
       waiver_required: false,
       waiver_url: "",
+      image_id: "",
     });
     await fetchData();
     setActiveTab("Manage Events");
@@ -200,6 +226,7 @@ const AdminPanel = () => {
       location: event.location,
       waiver_required: event.waiver_required,
       waiver_url: event.waiver_url || "",
+      image_id: event.image_id || "",
     });
     setActiveTab("Create Event");
   };

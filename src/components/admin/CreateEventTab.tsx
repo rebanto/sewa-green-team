@@ -1,11 +1,52 @@
-import { useRef } from "react";
+import { useRef, useState, useEffect } from "react";
+import { supabase } from "../../lib/supabaseClient";
 
 const CreateEventTab = ({ eventForm, handleEventChange, saveEvent, setEventForm }: any) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
+  const [currentImageUrl, setCurrentImageUrl] = useState<string | null>(null);
+
+  // Fetch current image URL when editing an event
+  useEffect(() => {
+    const fetchCurrentImage = async () => {
+      if (eventForm.image_id) {
+        try {
+          // Get the file info from storage
+          const { data: files, error } = await supabase.storage
+            .from("events")
+            .list("images", { limit: 1000 });
+
+          if (error) throw error;
+
+          // Find the file with matching ID
+          const imageFile = files?.find((file) => file.id === eventForm.image_id);
+
+          if (imageFile) {
+            const {
+              data: { publicUrl },
+            } = supabase.storage.from("events").getPublicUrl(`images/${imageFile.name}`);
+            setCurrentImageUrl(publicUrl);
+          } else {
+            setCurrentImageUrl(null);
+          }
+        } catch (error) {
+          console.error("Error fetching current image:", error);
+          setCurrentImageUrl(null);
+        }
+      } else {
+        setCurrentImageUrl(null);
+      }
+    };
+
+    fetchCurrentImage();
+  }, [eventForm.image_id]);
+
   return (
     <section>
       <form
-        onSubmit={(e) => saveEvent(e, fileInputRef.current?.files?.[0])}
+        onSubmit={(e) =>
+          saveEvent(e, fileInputRef.current?.files?.[0], imageInputRef.current?.files?.[0])
+        }
         className="space-y-4 max-w-xl mx-auto"
       >
         <input
@@ -48,6 +89,20 @@ const CreateEventTab = ({ eventForm, handleEventChange, saveEvent, setEventForm 
           required
           className="formInput"
         />
+        <div>
+          <label className="block mb-1 font-semibold">Event Image (Optional)</label>
+          <input type="file" accept="image/*" ref={imageInputRef} className="formInput" />
+          {currentImageUrl && (
+            <div className="mt-2">
+              <p className="text-xs mb-1">Current image:</p>
+              <img
+                src={currentImageUrl}
+                alt="Event preview"
+                className="w-32 h-32 object-cover rounded-lg border"
+              />
+            </div>
+          )}
+        </div>
         <label className="flex items-center gap-2">
           <input
             type="checkbox"
@@ -103,6 +158,7 @@ const CreateEventTab = ({ eventForm, handleEventChange, saveEvent, setEventForm 
                 location: "",
                 waiver_required: false,
                 waiver_url: "",
+                image_id: "",
               })
             }
             className="ml-4 bg-gray-300 hover:bg-gray-400 rounded-full px-6 py-2"
