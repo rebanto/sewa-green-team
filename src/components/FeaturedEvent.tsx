@@ -12,33 +12,33 @@ const FeaturedEvent = () => {
       setError(null);
       // 1. Get featured_event_id from website_details
       const { data: websiteDetails } = await supabase
-        .from('website_details')
-        .select('featured_event_id')
+        .from("website_details")
+        .select("featured_event_id")
         .single();
       let eventData = null;
       let eventError = null;
       if (websiteDetails?.featured_event_id) {
         // 2. Fetch the event with that ID
         const { data, error } = await supabase
-          .from('events')
-          .select('id,title,description,date')
-          .eq('id', websiteDetails.featured_event_id)
+          .from("events")
+          .select("id,title,description,date")
+          .eq("id", websiteDetails.featured_event_id)
           .single();
         eventData = data;
         eventError = error;
       } else {
         // 3. Fallback: fetch latest event
         const { data, error } = await supabase
-          .from('events')
-          .select('id,title,description,date')
-          .order('date', { ascending: false })
+          .from("events")
+          .select("id,title,description,date")
+          .order("date", { ascending: false })
           .limit(1)
           .single();
         eventData = data;
         eventError = error;
       }
       if (eventError) {
-        setError('Failed to load event.');
+        setError("Failed to load event.");
       } else {
         setEvent(eventData);
       }

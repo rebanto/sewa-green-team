@@ -1,4 +1,4 @@
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronUp } from "lucide-react";
 
 const PendingUsersTab = ({
   pendingUsers,
@@ -11,7 +11,7 @@ const PendingUsersTab = ({
   filterUsers,
   expandedUserId,
   toggleExpand,
-  updateUserStatus
+  updateUserStatus,
 }: any) => (
   <>
     <div className="max-w-md mx-auto mb-6 flex flex-wrap justify-center gap-6">
@@ -19,11 +19,13 @@ const PendingUsersTab = ({
         <label className="font-semibold text-gray-700">Filter by Role:</label>
         <select
           value={pendingRoleFilter}
-          onChange={e => setPendingRoleFilter(e.target.value)}
+          onChange={(e) => setPendingRoleFilter(e.target.value)}
           className="border border-gray-300 rounded px-3 py-1 w-40"
         >
           {roles.map((r: string) => (
-            <option key={r} value={r}>{r}</option>
+            <option key={r} value={r}>
+              {r}
+            </option>
           ))}
         </select>
       </div>
@@ -31,11 +33,13 @@ const PendingUsersTab = ({
         <label className="font-semibold text-gray-700">Filter by Status:</label>
         <select
           value={pendingStatusFilter}
-          onChange={e => setPendingStatusFilter(e.target.value)}
+          onChange={(e) => setPendingStatusFilter(e.target.value)}
           className="border border-gray-300 rounded px-3 py-1 w-40"
         >
           {statusOptions.map((s: string) => (
-            <option key={s} value={s}>{s}</option>
+            <option key={s} value={s}>
+              {s}
+            </option>
           ))}
         </select>
       </div>
@@ -65,13 +69,17 @@ const PendingUsersTab = ({
             </div>
             {expandedUserId === user.id && (
               <div className="mt-4 text-sm text-gray-700 space-y-2">
-                {user.role === 'STUDENT' && (
+                {user.role === "STUDENT" && (
                   <>
-                    <p>Parent 1: {user.parent_1_name} ({user.parent_1_email}, {user.parent_1_phone})</p>
-                    <p>Parent 2: {user.parent_2_name} ({user.parent_2_email}, {user.parent_2_phone})</p>
+                    <p>
+                      Parent 1: {user.parent_1_name} ({user.parent_1_email}, {user.parent_1_phone})
+                    </p>
+                    <p>
+                      Parent 2: {user.parent_2_name} ({user.parent_2_email}, {user.parent_2_phone})
+                    </p>
                   </>
                 )}
-                {user.role === 'PARENT' && (
+                {user.role === "PARENT" && (
                   <>
                     <p>Student Name: {user.student_name}</p>
                     <p>Student Email: {user.student_email}</p>
@@ -82,13 +90,13 @@ const PendingUsersTab = ({
             )}
             <div className="mt-4 flex gap-4">
               <button
-                onClick={() => updateUserStatus(user.id, 'APPROVED')}
+                onClick={() => updateUserStatus(user.id, "APPROVED")}
                 className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-full font-medium"
               >
                 Approve
               </button>
               <button
-                onClick={() => updateUserStatus(user.id, 'REJECTED')}
+                onClick={() => updateUserStatus(user.id, "REJECTED")}
                 className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-full font-medium"
               >
                 Reject

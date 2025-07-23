@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { supabase } from '../lib/supabaseClient';
+import { useEffect, useState } from "react";
+import { supabase } from "../lib/supabaseClient";
 
 export const useWebsiteStats = () => {
   const [stats, setStats] = useState({ volunteers: 0, trash: 0, events: 0 });
@@ -8,10 +8,7 @@ export const useWebsiteStats = () => {
   useEffect(() => {
     const fetchStats = async () => {
       setLoading(true);
-      const { data } = await supabase
-        .from('website_details')
-        .select('*')
-        .single();
+      const { data } = await supabase.from("website_details").select("*").single();
       if (data) setStats(data);
       setLoading(false);
     };

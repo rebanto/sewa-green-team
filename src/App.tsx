@@ -16,53 +16,38 @@ import { NavbarProvider } from "./context/navbar/NavbarProvider";
 import { AuthProvider } from "./context/auth/AuthProvider";
 
 function App() {
-	return (
-		<Router>
-			<AuthProvider>
-				<AuthRedirector />
-				<NavbarProvider>
-					<div className="flex flex-col min-h-screen">
-						<Navbar />
-						<main className="flex-grow">
-							<Routes>
-								<Route path="/" element={<Home />} />
-								<Route path="/about" element={<About />} />
-								<Route
-									path="/initiatives"
-									element={<Initiatives />}
-								/>
-								<Route
-									path="/get-involved"
-									element={<GetInvolved />}
-								/>
-								<Route path="/contact" element={<Contact />} />
-								<Route path="/gallery" element={<Gallery />} />
-								<Route
-									path="/dashboard"
-									element={<Dashboard />}
-								/>
-								<Route
-									path="/not-approved"
-									element={<NotApproved />}
-								/>
-								<Route path="/admin" element={<AdminPanel />} />
-								<Route
-									path="/not-allowed"
-									element={<NotAllowed />}
-								/>
-							</Routes>
-						</main>
-						<Footer />
-					</div>
-				</NavbarProvider>
-			</AuthProvider>
-		</Router>
-	);
+  return (
+    <Router>
+      <AuthProvider>
+        <AuthRedirector />
+        <NavbarProvider>
+          <div className="flex flex-col min-h-screen">
+            <Navbar />
+            <main className="flex-grow">
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/initiatives" element={<Initiatives />} />
+                <Route path="/get-involved" element={<GetInvolved />} />
+                <Route path="/contact" element={<Contact />} />
+                <Route path="/gallery" element={<Gallery />} />
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/not-approved" element={<NotApproved />} />
+                <Route path="/admin" element={<AdminPanel />} />
+                <Route path="/not-allowed" element={<NotAllowed />} />
+              </Routes>
+            </main>
+            <Footer />
+          </div>
+        </NavbarProvider>
+      </AuthProvider>
+    </Router>
+  );
 }
 
 function AuthRedirector() {
-	useAuthRedirect();
-	return null;
+  useAuthRedirect();
+  return null;
 }
 
 export default App;

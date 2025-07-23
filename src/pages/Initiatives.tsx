@@ -1,28 +1,28 @@
-import Tilt from 'react-parallax-tilt';
-import { motion } from 'framer-motion';
-import { FaTree, FaWater, FaLeaf } from 'react-icons/fa';
+import Tilt from "react-parallax-tilt";
+import { motion } from "framer-motion";
+import { FaTree, FaWater, FaLeaf } from "react-icons/fa";
 
 const initiatives = [
   {
-    title: 'SGT River Cleaning  Committee',
+    title: "SGT River Cleaning  Committee",
     description:
       "Sewa Green Team partnered with the National Park Service to clean the Chattahoochee River, removing an average of 300 lbs of trash per cleanup to protect local wildlife and preserve natural spaces.",
     icon: <FaWater className="text-[#6ca0dc] text-3xl" />, // River blue
-    image: '/river_cleaning.JPG',
+    image: "/river_cleaning.JPG",
   },
   {
-    title: 'SGT Tree Planting Committee',
+    title: "SGT Tree Planting Committee",
     description:
-      'In collaboration with Trees Atlanta, Sewa Green Team helps plant and care for native trees across Metro Atlanta.',
+      "In collaboration with Trees Atlanta, Sewa Green Team helps plant and care for native trees across Metro Atlanta.",
     icon: <FaTree className="text-[#8a9663] text-3xl" />, // Earthy olive
-    image: '/tree_planting.png',
+    image: "/tree_planting.png",
   },
   {
-    title: 'SGT Sustainability Committee',
+    title: "SGT Sustainability Committee",
     description:
-      'To make large community events more eco-friendly, Sewa Green Team partners with organizers to implement waste reduction, recycling, and sustainable practices at festivals like Holi and Sewa’s 5K.',
+      "To make large community events more eco-friendly, Sewa Green Team partners with organizers to implement waste reduction, recycling, and sustainable practices at festivals like Holi and Sewa’s 5K.",
     icon: <FaLeaf className="text-[#dba979] text-3xl" />,
-    image: '/sustainability.jpg',
+    image: "/sustainability.jpg",
   },
 ];
 
@@ -32,16 +32,14 @@ export default function Initiatives() {
       <motion.div
         initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, ease: 'easeOut' }}
+        transition={{ duration: 0.8, ease: "easeOut" }}
         className="max-w-6xl mx-auto text-center"
       >
-        <h1 className="text-5xl font-extrabold text-[#8a9663] mb-6">
-          Our Initiatives
-        </h1>
+        <h1 className="text-5xl font-extrabold text-[#8a9663] mb-6">Our Initiatives</h1>
         <p className="text-lg text-[#858d6a] max-w-3xl mx-auto mb-16">
-          Every initiative we take is an opportunity to give back to our planet.
-          These efforts aren’t just projects—they’re movements driven by passion,
-          responsibility, and youth-led energy.
+          Every initiative we take is an opportunity to give back to our planet. These efforts
+          aren’t just projects—they’re movements driven by passion, responsibility, and youth-led
+          energy.
         </p>
 
         <div className="flex flex-col space-y-16 pb-10">
@@ -75,13 +73,9 @@ export default function Initiatives() {
                   <div className="md:w-1/2 p-8 text-left flex flex-col justify-center min-h-[14rem]">
                     <div className="flex items-center gap-4 mb-4">
                       {item.icon}
-                      <h2 className="text-2xl font-bold text-[#6f774d]">
-                        {item.title}
-                      </h2>
+                      <h2 className="text-2xl font-bold text-[#6f774d]">{item.title}</h2>
                     </div>
-                    <p className="text-[#6d7260] text-base leading-relaxed">
-                      {item.description}
-                    </p>
+                    <p className="text-[#6d7260] text-base leading-relaxed">{item.description}</p>
                   </div>
                 </div>
               </Tilt>

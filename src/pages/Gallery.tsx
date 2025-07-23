@@ -1,20 +1,16 @@
-import { motion } from 'framer-motion'
-import { useState } from 'react'
+import { motion } from "framer-motion";
+import { useState } from "react";
 
-const images = [
-  '/photos/event1.jpg',
-  '/photos/event2.jpg',
-  '/photos/event3.jpg',
-]
+const images = ["/photos/event1.jpg", "/photos/event2.jpg", "/photos/event3.jpg"];
 
 const Gallery = () => {
-  const [selected, setSelected] = useState<string | null>(null)
+  const [selected, setSelected] = useState<string | null>(null);
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 40 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.7, ease: 'easeOut' }}
+      transition={{ duration: 0.7, ease: "easeOut" }}
       className="max-w-6xl mx-auto px-6 py-16"
     >
       <h1 className="text-4xl font-bold text-green-700 mb-8">Gallery</h1>
@@ -39,7 +35,7 @@ const Gallery = () => {
         </div>
       )}
     </motion.div>
-  )
-}
+  );
+};
 
-export default Gallery
+export default Gallery;

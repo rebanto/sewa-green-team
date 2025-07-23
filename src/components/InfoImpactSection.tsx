@@ -1,7 +1,7 @@
-import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
-import { useEffect, useState } from 'react';
-import { FaLeaf, FaHandsHelping, FaGlobeAmericas } from 'react-icons/fa';
+import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { FaLeaf, FaHandsHelping, FaGlobeAmericas } from "react-icons/fa";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
@@ -11,21 +11,21 @@ const fadeUp = {
 // --- Info Cards ---
 const infoCards = [
   {
-    name: 'Who We Are',
-    desc: 'Learn about our mission, team, and values.',
-    to: '/about',
+    name: "Who We Are",
+    desc: "Learn about our mission, team, and values.",
+    to: "/about",
     icon: <FaLeaf className="text-3xl text-[#6b7547] mb-4" />,
   },
   {
-    name: 'What We Do',
-    desc: 'Explore our cleanups and sustainability programs.',
-    to: '/initiatives',
+    name: "What We Do",
+    desc: "Explore our cleanups and sustainability programs.",
+    to: "/initiatives",
     icon: <FaGlobeAmericas className="text-3xl text-[#6b7547] mb-4" />,
   },
   {
-    name: 'Partner With Us',
-    desc: 'Want to collaborate? Let’s make it happen.',
-    to: '/contact',
+    name: "Partner With Us",
+    desc: "Want to collaborate? Let’s make it happen.",
+    to: "/contact",
     icon: <FaHandsHelping className="text-3xl text-[#6b7547] mb-4" />,
   },
 ];
@@ -44,7 +44,8 @@ const MobileInfoImpactSection = ({ infoCards }: { infoCards: InfoCard[] }) => (
       The Movement is Growing 🌿
     </h2>
     <p className="text-[#6c7358] max-w-xs mx-auto mb-7 text-base font-medium">
-      Whether you’re a student, parent, or organization — there’s a place for you in our mission to restore and protect the planet.
+      Whether you’re a student, parent, or organization — there’s a place for you in our mission to
+      restore and protect the planet.
     </p>
     <div className="w-full max-w-md mx-auto flex flex-col gap-5 mb-8">
       {infoCards.map((card: InfoCard) => (
@@ -79,8 +80,8 @@ const InfoImpactSection = () => {
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 640);
     checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
   return (
@@ -98,7 +99,8 @@ const InfoImpactSection = () => {
             The Movement is Growing 🌿
           </h2>
           <p className="text-[#6c7358] max-w-xs sm:max-w-md md:max-w-xl mx-auto mb-8 sm:mb-12 text-base sm:text-lg font-medium">
-            Whether you’re a student, parent, or organization — there’s a place for you in our mission to restore and protect the planet.
+            Whether you’re a student, parent, or organization — there’s a place for you in our
+            mission to restore and protect the planet.
           </p>
 
           <div className="w-full max-w-6xl mx-auto h-48 xs:h-56 sm:h-80 md:h-[28rem] mb-10 sm:mb-14 flex items-center justify-center relative">
@@ -115,12 +117,12 @@ const InfoImpactSection = () => {
                   variants={fadeUp}
                   whileHover={{
                     scale: 1.05,
-                    backgroundColor: 'rgba(255,255,255,0.2)',
+                    backgroundColor: "rgba(255,255,255,0.2)",
                     boxShadow:
-                      '0 0 24px 4px rgba(107,117,71,0.13), 0 0 0 2px rgba(107,117,71,0.18), 0 0 60px rgba(107,117,71,0.07), 0 0 120px rgba(107,117,71,0.05)',
+                      "0 0 24px 4px rgba(107,117,71,0.13), 0 0 0 2px rgba(107,117,71,0.18), 0 0 60px rgba(107,117,71,0.07), 0 0 120px rgba(107,117,71,0.05)",
                   }}
                   transition={{
-                    type: 'spring',
+                    type: "spring",
                     stiffness: 250,
                     damping: 20,
                   }}

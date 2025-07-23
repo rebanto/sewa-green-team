@@ -1,13 +1,6 @@
-import React, { useState } from 'react';
-import { supabase } from '../../lib/supabaseClient';
-import {
-  FaUser,
-  FaEnvelope,
-  FaPhone,
-  FaCheckCircle,
-  FaTimesCircle,
-  FaCopy,
-} from 'react-icons/fa';
+import React, { useState } from "react";
+import { supabase } from "../../lib/supabaseClient";
+import { FaUser, FaEnvelope, FaPhone, FaCheckCircle, FaTimesCircle, FaCopy } from "react-icons/fa";
 
 const ManageEventsTab = ({ events, startEditEvent, deleteEvent }: any) => {
   const [showModal, setShowModal] = useState(false);
@@ -18,7 +11,7 @@ const ManageEventsTab = ({ events, startEditEvent, deleteEvent }: any) => {
   // Helper to check if event is in the past
   const isEventPast = (dateStr: string, timeStr?: string) => {
     if (!dateStr) return false;
-    const eventDate = new Date(dateStr + (timeStr ? 'T' + timeStr : 'T23:59'));
+    const eventDate = new Date(dateStr + (timeStr ? "T" + timeStr : "T23:59"));
     return eventDate < new Date();
   };
 
@@ -30,19 +23,19 @@ const ManageEventsTab = ({ events, startEditEvent, deleteEvent }: any) => {
   const [savingHours, setSavingHours] = useState(false);
 
   const formatDate = (dateStr: string, timeStr?: string) => {
-    if (!dateStr) return 'No date';
-    const date = new Date(dateStr + (timeStr ? 'T' + timeStr : ''));
-    return new Intl.DateTimeFormat('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
+    if (!dateStr) return "No date";
+    const date = new Date(dateStr + (timeStr ? "T" + timeStr : ""));
+    return new Intl.DateTimeFormat("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     }).format(date);
   };
 
   const handleDelete = (id: string) => {
-    if (window.confirm('Are you sure you want to delete this event?')) {
+    if (window.confirm("Are you sure you want to delete this event?")) {
       deleteEvent(id);
     }
   };
@@ -55,8 +48,9 @@ const ManageEventsTab = ({ events, startEditEvent, deleteEvent }: any) => {
 
     try {
       const { data, error } = await supabase
-        .from('event_signups')
-        .select(`
+        .from("event_signups")
+        .select(
+          `
           id,
           status,
           user_id,
@@ -70,35 +64,33 @@ const ManageEventsTab = ({ events, startEditEvent, deleteEvent }: any) => {
             role,
             status
           )
-        `)
-        .eq('event_id', eventId);
+        `,
+        )
+        .eq("event_id", eventId);
 
       if (error) throw error;
       setSignedUpUsers(data || []);
     } catch (error: any) {
-      alert('Failed to load signed up users: ' + error.message);
+      alert("Failed to load signed up users: " + error.message);
     } finally {
       setLoadingUsers(false);
     }
   };
 
   const removeSignup = async (signupId: string) => {
-    if (!window.confirm('Remove this user from the event?')) return;
-    const { error } = await supabase
-      .from('event_signups')
-      .delete()
-      .eq('id', signupId);
+    if (!window.confirm("Remove this user from the event?")) return;
+    const { error } = await supabase.from("event_signups").delete().eq("id", signupId);
     if (error) return alert(error.message);
-    setSignedUpUsers(prev => prev.filter(su => su.id !== signupId));
+    setSignedUpUsers((prev) => prev.filter((su) => su.id !== signupId));
   };
 
-  const copyField = (field: 'email' | 'phone') => {
+  const copyField = (field: "email" | "phone") => {
     const text = signedUpUsers
-      .map(s => s.user?.[field])
+      .map((s) => s.user?.[field])
       .filter(Boolean)
-      .join(', ');
+      .join(", ");
     navigator.clipboard.writeText(text);
-    alert(`${field === 'email' ? 'Emails' : 'Phone numbers'} copied!`);
+    alert(`${field === "email" ? "Emails" : "Phone numbers"} copied!`);
   };
 
   // Open modal and fetch users for event
@@ -109,15 +101,15 @@ const ManageEventsTab = ({ events, startEditEvent, deleteEvent }: any) => {
     setHoursData({});
     // Fetch users signed up for this event
     const { data, error } = await supabase
-      .from('event_signups')
-      .select('id, user_id, user:users(id, full_name, email)')
-      .eq('event_id', event.id);
+      .from("event_signups")
+      .select("id, user_id, user:users(id, full_name, email)")
+      .eq("event_id", event.id);
     setHoursUsers(data?.map((s: any) => s.user) || []);
   };
 
   // Handle input change
   const handleHoursChange = (userId: string, value: string) => {
-    setHoursData(prev => ({ ...prev, [userId]: Number(value) }));
+    setHoursData((prev) => ({ ...prev, [userId]: Number(value) }));
   };
 
   // Set all hours at once
@@ -125,7 +117,7 @@ const ManageEventsTab = ({ events, startEditEvent, deleteEvent }: any) => {
     const num = Number(value);
     if (isNaN(num)) return;
     const newData: { [userId: string]: number } = {};
-    hoursUsers.forEach(user => {
+    hoursUsers.forEach((user) => {
       newData[user.id] = num;
     });
     setHoursData(newData);
@@ -143,19 +135,19 @@ const ManageEventsTab = ({ events, startEditEvent, deleteEvent }: any) => {
           hours,
         }));
       if (inserts.length === 0) {
-        alert('Please enter hours for at least one user.');
+        alert("Please enter hours for at least one user.");
         setSavingHours(false);
         return;
       }
       // Insert or upsert volunteer hours
       const { error } = await supabase
-        .from('volunteer_hours')
-        .upsert(inserts, { onConflict: 'event_id,user_id' });
+        .from("volunteer_hours")
+        .upsert(inserts, { onConflict: "event_id,user_id" });
       if (error) throw error;
       setShowHoursModal(false);
-      alert('Volunteer hours saved!');
+      alert("Volunteer hours saved!");
     } catch (err: any) {
-      alert('Error saving hours: ' + err.message);
+      alert("Error saving hours: " + err.message);
     } finally {
       setSavingHours(false);
     }
@@ -227,20 +219,18 @@ const ManageEventsTab = ({ events, startEditEvent, deleteEvent }: any) => {
               ×
             </button>
 
-            <h2 className="text-3xl font-bold text-[#49682d] mb-4">
-              Users Signed Up
-            </h2>
+            <h2 className="text-3xl font-bold text-[#49682d] mb-4">Users Signed Up</h2>
 
             {!loadingUsers && signedUpUsers.length > 0 && (
               <div className="flex flex-wrap gap-4 mb-6">
                 <button
-                  onClick={() => copyField('email')}
+                  onClick={() => copyField("email")}
                   className="bg-[#70923e] hover:bg-[#5c7c32] text-white px-4 py-2 rounded-full font-semibold flex items-center gap-2"
                 >
                   <FaEnvelope /> Copy Emails
                 </button>
                 <button
-                  onClick={() => copyField('phone')}
+                  onClick={() => copyField("phone")}
                   className="bg-[#70923e] hover:bg-[#5c7c32] text-white px-4 py-2 rounded-full font-semibold flex items-center gap-2"
                 >
                   <FaPhone /> Copy Phones
@@ -254,7 +244,7 @@ const ManageEventsTab = ({ events, startEditEvent, deleteEvent }: any) => {
               <p className="text-gray-600 text-center italic">No users signed up yet.</p>
             ) : (
               <ul className="space-y-6">
-                {signedUpUsers.map(signup => {
+                {signedUpUsers.map((signup) => {
                   const user = signup.user;
                   return (
                     <li
@@ -314,7 +304,12 @@ const ManageEventsTab = ({ events, startEditEvent, deleteEvent }: any) => {
             {hoursUsers.length === 0 ? (
               <p className="text-gray-600 italic">No approved users for this event.</p>
             ) : (
-              <form onSubmit={e => { e.preventDefault(); handleSaveVolunteerHours(); }}>
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleSaveVolunteerHours();
+                }}
+              >
                 <div className="mb-6 flex items-center gap-4">
                   <label className="font-semibold">Set hours for all attendees:</label>
                   <input
@@ -323,12 +318,12 @@ const ManageEventsTab = ({ events, startEditEvent, deleteEvent }: any) => {
                     step="0.5"
                     className="border rounded px-2 py-1 w-24"
                     placeholder="Hours"
-                    onChange={e => handleSetAllHours(e.target.value)}
+                    onChange={(e) => handleSetAllHours(e.target.value)}
                   />
                   <span className="text-gray-500 text-sm">hours</span>
                 </div>
                 <div className="space-y-4 mb-6">
-                  {hoursUsers.map(user => (
+                  {hoursUsers.map((user) => (
                     <div key={user.id} className="flex items-center gap-4">
                       <span className="w-40 font-semibold">{user.full_name}</span>
                       <input
@@ -337,8 +332,8 @@ const ManageEventsTab = ({ events, startEditEvent, deleteEvent }: any) => {
                         step="0.5"
                         className="border rounded px-2 py-1 w-24"
                         placeholder="Hours"
-                        value={hoursData[user.id] || ''}
-                        onChange={e => handleHoursChange(user.id, e.target.value)}
+                        value={hoursData[user.id] || ""}
+                        onChange={(e) => handleHoursChange(user.id, e.target.value)}
                         required
                       />
                       <span className="text-gray-500 text-sm">hours</span>
@@ -350,7 +345,7 @@ const ManageEventsTab = ({ events, startEditEvent, deleteEvent }: any) => {
                   className="bg-green-700 hover:bg-green-800 text-white px-6 py-2 rounded-full font-semibold"
                   disabled={savingHours}
                 >
-                  {savingHours ? 'Saving...' : 'Save Hours'}
+                  {savingHours ? "Saving..." : "Save Hours"}
                 </button>
               </form>
             )}
