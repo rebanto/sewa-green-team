@@ -1,15 +1,16 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "../lib/supabaseClient";
-import { useAuth } from "../context/auth/AuthContext";
+import { supabase } from "~/lib/supabaseClient";
 import clsx from "clsx";
-import PendingUsersTab from "../components/admin/PendingUsersTab";
-import AllUsersTab from "../components/admin/AllUsersTab";
-import CreateEventTab from "../components/admin/CreateEventTab";
-import ManageEventsTab from "../components/admin/ManageEventsTab";
-import WebsiteDetailsTab from "../components/admin/WebsiteDetailsTab";
-import { useDeletePastEventPDFs } from "../hooks/useDeletePastEventPDFs";
-import { useDeletePastEventImages } from "../hooks/useDeletePastEventImages";
+import PendingUsersTab from "~/components/admin/PendingUsersTab";
+import AllUsersTab from "~/components/admin/AllUsersTab";
+import CreateEventTab from "~/components/admin/CreateEventTab";
+import ManageEventsTab from "~/components/admin/ManageEventsTab";
+import WebsiteDetailsTab from "~/components/admin/WebsiteDetailsTab";
+import { useDeletePastEventPDFs } from "~/hooks/useDeletePastEventPDFs";
+import { useDeletePastEventImages } from "~/hooks/useDeletePastEventImages";
+import type { User, Event, EventFormData, UserWithStudentInfo } from "~/types";
+import { useAuth } from "../context/auth/AuthContext";
 
 const tabs = ["Pending Users", "All Users", "Create Event", "Manage Events", "Website Details"];
 
@@ -19,16 +20,16 @@ const statusOptions = ["ALL", "APPROVED", "PENDING", "REJECTED"];
 const AdminPanel = () => {
   const { user, loading: authLoading } = useAuth();
   const [activeTab, setActiveTab] = useState("Pending Users");
-  const [pendingUsers, setPendingUsers] = useState<any[]>([]);
-  const [allUsers, setAllUsers] = useState<any[]>([]);
-  const [events, setEvents] = useState<any[]>([]);
+  const [pendingUsers, setPendingUsers] = useState<UserWithStudentInfo[]>([]);
+  const [allUsers, setAllUsers] = useState<UserWithStudentInfo[]>([]);
+  const [events, setEvents] = useState<Event[]>([]);
   const [expandedUserId, setExpandedUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [userRoleFilter, setUserRoleFilter] = useState("ALL");
   const [pendingRoleFilter, setPendingRoleFilter] = useState("ALL");
   const [userStatusFilter, setUserStatusFilter] = useState("ALL");
   const [pendingStatusFilter, setPendingStatusFilter] = useState("ALL");
-  const [eventForm, setEventForm] = useState({
+  const [eventForm, setEventForm] = useState<EventFormData>({
     id: "", // for editing events
     title: "",
     description: "",
@@ -37,7 +38,6 @@ const AdminPanel = () => {
     location: "",
     waiver_required: false,
     waiver_url: "",
-    image_id: "",
   });
 
   const navigate = useNavigate();
@@ -49,7 +49,7 @@ const AdminPanel = () => {
   };
 
   // Fetch all necessary data
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     // Wait for auth to be ready
     if (authLoading) return;
 
@@ -66,21 +66,41 @@ const AdminPanel = () => {
       return navigate("/not-allowed");
     }
 
-    const [pendingResp, eventsResp, allUsersResp] = await Promise.all([
-      supabase.from("users").select("*").eq("status", "PENDING").eq("email_confirmed", true),
+    const [eventsResp, { data: usersResp }] = await Promise.all([
       supabase.from("events").select("*").order("date", { ascending: true }),
       supabase.from("users").select("*").order("full_name", { ascending: true }),
     ]);
 
-    setPendingUsers(pendingResp.data || []);
+    // Split users into pending and all users
+    const allUsers =
+      usersResp?.map((user) => {
+        if (user.role === "PARENT") {
+          const student = usersResp.find(
+            (potential_student) => potential_student.parent_1_name === user.full_name,
+          );
+          return {
+            ...user,
+            student_name: student?.full_name || "",
+            student_email: student?.email || "",
+            student_phone: student?.phone || "",
+          };
+        }
+        return user;
+      }) || [];
+
+    const pendingResp = allUsers.filter(
+      (u) => u.status === "PENDING" && u.email_confirmed === true,
+    );
+
+    setPendingUsers(pendingResp || []);
     setEvents(eventsResp.data || []);
-    setAllUsers(allUsersResp.data || []);
+    setAllUsers(usersResp || []);
     setLoading(false);
-  };
+  }, [authLoading, user, navigate]);
 
   useEffect(() => {
     fetchData();
-  }, [user, authLoading]);
+  }, [user, authLoading, fetchData]);
 
   // User approval/reject
   const updateUserStatus = async (id: string, status: "APPROVED" | "REJECTED") => {
@@ -97,7 +117,7 @@ const AdminPanel = () => {
   };
 
   // Filter users based on role and status
-  const filterUsers = (users: any[], roleFilter: string, statusFilter: string) => {
+  const filterUsers = (users: User[], roleFilter: string, statusFilter: string) => {
     let filtered = users;
     if (roleFilter !== "ALL") {
       filtered = filtered.filter((u) => u.role === roleFilter);
@@ -119,12 +139,11 @@ const AdminPanel = () => {
 
   // Create or update event
   // Prevent editing a past event to a future date
-  const saveEvent = async (e: React.FormEvent, waiverFile?: File, imageFile?: File) => {
+  const saveEvent = async (e: React.FormEvent, waiverFile?: File) => {
     e.preventDefault();
     const eventId = eventForm.id ? String(eventForm.id) : "";
     const formattedDate = eventForm.date ? eventForm.date.split("T")[0] : "";
     let waiver_url = eventForm.waiver_url || "";
-    let image_id = eventForm.image_id || "";
     const now = new Date().toISOString().split("T")[0];
     if (eventId) {
       // Editing an existing event
@@ -141,34 +160,12 @@ const AdminPanel = () => {
     if (eventForm.waiver_required && waiverFile) {
       // Upload to Supabase Storage
       const fileName = `${Date.now()}_${waiverFile.name}`;
-      const { data, error } = await supabase.storage
+      const { error } = await supabase.storage
         .from("waivers")
         .upload(fileName, waiverFile, { upsert: true });
       if (error) return alert("Failed to upload waiver PDF: " + error.message);
       const { data: publicUrlData } = supabase.storage.from("waivers").getPublicUrl(fileName);
       waiver_url = publicUrlData.publicUrl;
-    }
-
-    if (imageFile) {
-      // Upload image to Supabase Storage
-      const fileExt = imageFile.name.split(".").pop();
-      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 11)}.${fileExt}`;
-      const { data, error } = await supabase.storage
-        .from("events")
-        .upload(`images/${fileName}`, imageFile, { upsert: true });
-      if (error) return alert("Failed to upload event image: " + error.message);
-
-      // Get the file info to extract the ID
-      const { data: fileData, error: fileError } = await supabase.storage
-        .from("events")
-        .list("images", { search: fileName });
-
-      if (fileError || !fileData || fileData.length === 0) {
-        return alert("Failed to get uploaded file information");
-      }
-
-      // Use the file ID from the uploaded file
-      image_id = fileData[0].id;
     }
     const eventData = {
       title: eventForm.title,
@@ -178,7 +175,6 @@ const AdminPanel = () => {
       location: eventForm.location,
       waiver_required: eventForm.waiver_required,
       waiver_url: eventForm.waiver_required ? waiver_url : "",
-      image_id: image_id || null,
     };
     if (eventId) {
       const { data, error } = await supabase
@@ -202,7 +198,6 @@ const AdminPanel = () => {
       location: "",
       waiver_required: false,
       waiver_url: "",
-      image_id: "",
     });
     await fetchData();
     setActiveTab("Manage Events");
@@ -217,7 +212,7 @@ const AdminPanel = () => {
   };
 
   // Populate event form for editing, with fixed date formatting
-  const startEditEvent = (event: any) => {
+  const startEditEvent = (event: Event) => {
     setEventForm({
       id: event.id,
       title: event.title,
@@ -227,7 +222,6 @@ const AdminPanel = () => {
       location: event.location,
       waiver_required: event.waiver_required,
       waiver_url: event.waiver_url || "",
-      image_id: event.image_id || "",
     });
     setActiveTab("Create Event");
   };
@@ -262,6 +256,7 @@ const AdminPanel = () => {
       try {
         // Supabase public URL: .../storage/v1/object/public/waivers/<file>
         // We want the path relative to the bucket, e.g. '<file>'
+        if (!event.waiver_url) return "";
         const url = new URL(event.waiver_url);
         const match = url.pathname.match(/waivers\/(.+)$/);
         if (match && match[1]) {
@@ -274,17 +269,10 @@ const AdminPanel = () => {
     },
   );
 
-  // automated deletion of images for past events
   const deletePastEventImages = useDeletePastEventImages(
     "events",
-    () =>
-      (events || []).filter((ev) => {
-        return ev.image_id && new Date(ev.date) < new Date();
-      }),
-    (event) => {
-      // the image_id is the file id in the 'images/' folder of the 'events' bucket
-      return event.image_id ? `images/${event.image_id}` : "";
-    }
+    () => events || [],
+    (event) => (event.image_id ? `images/${event.image_id}` : null),
   );
 
   useEffect(() => {
@@ -292,9 +280,7 @@ const AdminPanel = () => {
       deletePastEventPDFs().then(() => {
         // Optionally, you can refresh events here if needed
       });
-      deletePastEventImages().then(() => {
-        // Optionally, you can refresh events here if needed
-      });
+      deletePastEventImages();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [events]);
@@ -310,6 +296,7 @@ const AdminPanel = () => {
         {tabs.map((tab) => (
           <button
             key={tab}
+            type="button"
             className={clsx(
               "px-4 py-2 rounded-full font-semibold transition whitespace-nowrap",
               activeTab === tab
@@ -317,6 +304,8 @@ const AdminPanel = () => {
                 : "bg-[#dfe5cd] text-[#4d5640] hover:bg-[#cbd6b0]",
             )}
             onClick={() => setActiveTab(tab)}
+            aria-label={`Switch to ${tab} tab`}
+            title={`Switch to ${tab} tab`}
           >
             {tab}
           </button>

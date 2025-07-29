@@ -19,6 +19,7 @@ label {
 
 html {
   scroll-behavior: smooth;
+  background: white;
 }
 
 @layer components {

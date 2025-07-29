@@ -1,12 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
-import { supabase } from "../../lib/supabaseClient";
-
-// Define Leader type
-interface Leader {
-  name: string;
-  role: string;
-  image_url: string;
-}
+import { supabase } from "~/lib/supabaseClient";
+import type { Json } from "@/supabase.types";
+import type { Leader } from "~/types";
 
 const WebsiteDetailsTab = () => {
   const [stats, setStats] = useState({
@@ -20,15 +15,11 @@ const WebsiteDetailsTab = () => {
   const [leadershipLoading, setLeadershipLoading] = useState(true);
   const [leadershipSaving, setLeadershipSaving] = useState(false);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
-  const [newLeader, setNewLeader] = useState<Leader>({
-    name: "",
-    role: "",
-    image_url: "",
-  });
+  const [newLeader, setNewLeader] = useState<Leader>({ name: "", role: "", image_url: "" });
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   // Featured Event State
-  const [events, setEvents] = useState<any[]>([]);
+  const [events, setEvents] = useState<Array<{ id: string; title: string; date: string }>>([]);
   const [featuredEventId, setFeaturedEventId] = useState<string | null>(null);
   const [featuredSaving, setFeaturedSaving] = useState(false);
 
@@ -39,7 +30,7 @@ const WebsiteDetailsTab = () => {
       const { data } = await supabase.from("website_details").select("*").single();
       if (data) {
         setStats(data);
-        setLeadership(data.leadership || []);
+        setLeadership((data.leadership as unknown as Leader[]) || []);
         setFeaturedEventId(data.featured_event_id || null);
       }
       setLoading(false);
@@ -107,10 +98,7 @@ const WebsiteDetailsTab = () => {
       return;
     }
     const { data: publicUrlData } = supabase.storage.from("leadership").getPublicUrl(fileName);
-    setNewLeader((prev) => ({
-      ...prev,
-      image_url: publicUrlData.publicUrl,
-    }));
+    setNewLeader((prev) => ({ ...prev, image_url: publicUrlData.publicUrl }));
   };
 
   const handleAddLeader = () => {
@@ -146,7 +134,10 @@ const WebsiteDetailsTab = () => {
   const handleSaveLeadership = async () => {
     setLeadershipSaving(true);
     // Save leadership to DB
-    const { error } = await supabase.from("website_details").update({ leadership }).eq("id", 1);
+    const { error } = await supabase
+      .from("website_details")
+      .update({ leadership: leadership as unknown as Json })
+      .eq("id", 1);
     if (error) {
       setLeadershipSaving(false);
       return alert("Failed to save leadership: " + error.message);
@@ -177,7 +168,7 @@ const WebsiteDetailsTab = () => {
           await supabase.storage.from("leadership").remove(unusedFiles);
         }
       }
-    } catch (e) {
+    } catch {
       // Ignore cleanup errors
     }
     setLeadershipSaving(false);
@@ -196,42 +187,59 @@ const WebsiteDetailsTab = () => {
         >
           <h2 className="text-2xl font-bold mb-4 text-[#8a9663]">Edit Website Stats</h2>
           <div>
-            <label className="block font-semibold mb-1">Volunteers</label>
+            <label htmlFor="volunteers-input" className="block font-semibold mb-1">
+              Volunteers
+            </label>
             <input
+              id="volunteers-input"
               type="number"
               name="volunteers"
               value={stats.volunteers}
               onChange={handleChange}
               className="w-full border rounded px-3 py-2"
               min={0}
+              aria-label="Number of volunteers"
+              title="Enter the total number of volunteers"
             />
           </div>
           <div>
-            <label className="block font-semibold mb-1">Trash Removed (lbs)</label>
+            <label htmlFor="trash-input" className="block font-semibold mb-1">
+              Trash Removed (lbs)
+            </label>
             <input
+              id="trash-input"
               type="number"
               name="trash"
               value={stats.trash}
               onChange={handleChange}
               className="w-full border rounded px-3 py-2"
               min={0}
+              aria-label="Pounds of trash removed"
+              title="Enter the total pounds of trash removed"
             />
           </div>
           <div>
-            <label className="block font-semibold mb-1">Events Hosted</label>
+            <label htmlFor="events-input" className="block font-semibold mb-1">
+              Events Hosted
+            </label>
             <input
+              id="events-input"
               type="number"
               name="events"
               value={stats.events}
               onChange={handleChange}
               className="w-full border rounded px-3 py-2"
               min={0}
+              aria-label="Number of events hosted"
+              title="Enter the total number of events hosted"
             />
           </div>
           <button
             type="submit"
             className="bg-[#8a9663] hover:bg-[#6d7a4e] text-white px-6 py-2 rounded-full font-semibold mt-4"
             disabled={saving}
+            aria-label="Save website statistics"
+            title="Save changes to website statistics"
           >
             {saving ? "Saving..." : "Save Changes"}
           </button>
@@ -241,10 +249,16 @@ const WebsiteDetailsTab = () => {
         <div className="bg-white p-8 rounded-xl shadow space-y-6 flex flex-col h-fit">
           <h2 className="text-2xl font-bold mb-4 text-[#8a9663]">Select Featured Event</h2>
           <div className="flex flex-col sm:flex-row items-center gap-4">
+            <label htmlFor="featured-event-select" className="sr-only">
+              Select featured event
+            </label>
             <select
+              id="featured-event-select"
               className="border rounded px-3 py-2 w-full sm:w-2/3"
               value={featuredEventId || ""}
               onChange={handleFeaturedEventChange}
+              aria-label="Select featured event"
+              title="Choose an event to feature on the website"
             >
               <option value="">-- Select an event --</option>
               {events.map((ev) => (
@@ -254,9 +268,12 @@ const WebsiteDetailsTab = () => {
               ))}
             </select>
             <button
+              type="button"
               onClick={handleSaveFeaturedEvent}
               className="bg-[#8a9663] hover:bg-[#6d7a4e] text-white px-6 py-2 rounded-full font-semibold"
               disabled={featuredSaving}
+              aria-label="Save featured event selection"
+              title="Save the selected event as featured"
             >
               {featuredSaving ? "Saving..." : "Save Featured Event"}
             </button>
@@ -283,14 +300,20 @@ const WebsiteDetailsTab = () => {
                       <div className="text-[#858d6a]">{leader.role}</div>
                     </div>
                     <button
+                      type="button"
                       onClick={() => handleEditLeader(idx)}
                       className="text-blue-600 font-bold mr-2"
+                      aria-label={`Edit ${leader.name}`}
+                      title={`Edit ${leader.name}`}
                     >
                       Edit
                     </button>
                     <button
+                      type="button"
                       onClick={() => handleDeleteLeader(idx)}
                       className="text-red-600 font-bold"
+                      aria-label={`Delete ${leader.name}`}
+                      title={`Delete ${leader.name}`}
                     >
                       Delete
                     </button>
@@ -301,28 +324,46 @@ const WebsiteDetailsTab = () => {
                 <h3 className="font-bold mb-2 text-[#8a9663]">
                   {editingIndex !== null ? "Edit Leader" : "Add New Leader"}
                 </h3>
+                <label htmlFor="leader-name" className="sr-only">
+                  Leader name
+                </label>
                 <input
+                  id="leader-name"
                   type="text"
                   name="name"
                   placeholder="Name"
                   value={newLeader.name}
                   onChange={handleLeaderChange}
                   className="border rounded px-3 py-2 mr-2 mb-2"
+                  aria-label="Leader name"
+                  title="Enter the leader's name"
                 />
+                <label htmlFor="leader-role" className="sr-only">
+                  Leader role
+                </label>
                 <input
+                  id="leader-role"
                   type="text"
                   name="role"
                   placeholder="Role Name"
                   value={newLeader.role}
                   onChange={handleLeaderChange}
                   className="border rounded px-3 py-2 mr-2 mb-2"
+                  aria-label="Leader role"
+                  title="Enter the leader's role"
                 />
+                <label htmlFor="leader-image" className="sr-only">
+                  Leader image
+                </label>
                 <input
+                  id="leader-image"
                   type="file"
                   accept="image/*"
                   ref={fileInputRef}
                   onChange={handleImageChange}
                   className="mb-2"
+                  aria-label="Upload leader image"
+                  title="Upload an image for the leader"
                 />
                 {newLeader.image_url && (
                   <img
@@ -334,38 +375,46 @@ const WebsiteDetailsTab = () => {
                 <div className="mt-2">
                   {editingIndex !== null ? (
                     <button
+                      type="button"
                       onClick={handleUpdateLeader}
                       className="bg-blue-600 text-white px-4 py-1 rounded mr-2"
+                      aria-label="Update leader information"
+                      title="Update the leader's information"
                     >
                       Update
                     </button>
                   ) : (
                     <button
+                      type="button"
                       onClick={handleAddLeader}
                       className="bg-green-600 text-white px-4 py-1 rounded mr-2"
+                      aria-label="Add new leader"
+                      title="Add the new leader to the list"
                     >
                       Add
                     </button>
                   )}
                   <button
+                    type="button"
                     onClick={handleSaveLeadership}
                     className="bg-[#8a9663] text-white px-4 py-1 rounded"
                     disabled={leadershipSaving}
+                    aria-label="Save leadership changes"
+                    title="Save all leadership changes to the database"
                   >
                     {leadershipSaving ? "Saving..." : "Save Leadership"}
                   </button>
                   {editingIndex !== null && (
                     <button
+                      type="button"
                       onClick={() => {
                         setEditingIndex(null);
-                        setNewLeader({
-                          name: "",
-                          role: "",
-                          image_url: "",
-                        });
+                        setNewLeader({ name: "", role: "", image_url: "" });
                         if (fileInputRef.current) fileInputRef.current.value = "";
                       }}
                       className="ml-2 text-gray-500"
+                      aria-label="Cancel editing"
+                      title="Cancel editing and clear the form"
                     >
                       Cancel
                     </button>

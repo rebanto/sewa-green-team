@@ -1,11 +1,26 @@
-import React, { useState } from "react";
-import { supabase } from "../../lib/supabaseClient";
-import { FaUser, FaEnvelope, FaPhone, FaCheckCircle, FaTimesCircle, FaCopy } from "react-icons/fa";
+import { useState } from "react";
+import { supabase } from "~/lib/supabaseClient";
+import { FaUser, FaEnvelope, FaPhone } from "react-icons/fa";
+import type { ManageEventsTabProps, Event, User } from "~/types";
 
-const ManageEventsTab = ({ events, startEditEvent, deleteEvent }: any) => {
+interface SignedUpUser {
+  id: string;
+  status: string | null;
+  user_id: string | null;
+  event_id: string | null;
+  created_at: string | null;
+  user: User | null;
+}
+
+interface HoursUser {
+  id: string;
+  full_name: string;
+  email: string;
+}
+
+const ManageEventsTab = ({ events, startEditEvent, deleteEvent }: ManageEventsTabProps) => {
   const [showModal, setShowModal] = useState(false);
-  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
-  const [signedUpUsers, setSignedUpUsers] = useState<any[]>([]);
+  const [signedUpUsers, setSignedUpUsers] = useState<SignedUpUser[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(false);
 
   // Helper to check if event is in the past
@@ -17,9 +32,9 @@ const ManageEventsTab = ({ events, startEditEvent, deleteEvent }: any) => {
 
   // Volunteer Hours Modal State
   const [showHoursModal, setShowHoursModal] = useState(false);
-  const [hoursEvent, setHoursEvent] = useState<any>(null);
+  const [hoursEvent, setHoursEvent] = useState<Event | null>(null);
   const [hoursData, setHoursData] = useState<{ [userId: string]: number }>({});
-  const [hoursUsers, setHoursUsers] = useState<any[]>([]);
+  const [hoursUsers, setHoursUsers] = useState<HoursUser[]>([]);
   const [savingHours, setSavingHours] = useState(false);
 
   const formatDate = (dateStr: string, timeStr?: string) => {
@@ -43,7 +58,6 @@ const ManageEventsTab = ({ events, startEditEvent, deleteEvent }: any) => {
   const fetchSignedUpUsers = async (eventId: string) => {
     setLoadingUsers(true);
     setSignedUpUsers([]);
-    setSelectedEventId(eventId);
     setShowModal(true);
 
     try {
@@ -69,9 +83,10 @@ const ManageEventsTab = ({ events, startEditEvent, deleteEvent }: any) => {
         .eq("event_id", eventId);
 
       if (error) throw error;
-      setSignedUpUsers(data || []);
-    } catch (error: any) {
-      alert("Failed to load signed up users: " + error.message);
+      setSignedUpUsers((data as SignedUpUser[]) || []);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
+      alert("Failed to load signed up users: " + errorMessage);
     } finally {
       setLoadingUsers(false);
     }
@@ -94,17 +109,21 @@ const ManageEventsTab = ({ events, startEditEvent, deleteEvent }: any) => {
   };
 
   // Open modal and fetch users for event
-  const handleAddVolunteerHours = async (event: any) => {
+  const handleAddVolunteerHours = async (event: Event) => {
     setHoursEvent(event);
     setShowHoursModal(true);
     setSavingHours(false);
     setHoursData({});
     // Fetch users signed up for this event
-    const { data, error } = await supabase
+    const { data } = await supabase
       .from("event_signups")
       .select("id, user_id, user:users(id, full_name, email)")
       .eq("event_id", event.id);
-    setHoursUsers(data?.map((s: any) => s.user) || []);
+    setHoursUsers(
+      data
+        ?.map((s: { user: HoursUser | null }) => s.user)
+        .filter((user): user is HoursUser => user !== null) || [],
+    );
   };
 
   // Handle input change
@@ -125,10 +144,12 @@ const ManageEventsTab = ({ events, startEditEvent, deleteEvent }: any) => {
 
   // Save volunteer hours to Supabase
   const handleSaveVolunteerHours = async () => {
+    if (!hoursEvent) return;
+
     setSavingHours(true);
     try {
       const inserts = Object.entries(hoursData)
-        .filter(([_, hours]) => hours > 0)
+        .filter(([, hours]) => hours > 0)
         .map(([userId, hours]) => ({
           event_id: hoursEvent.id,
           user_id: userId,
@@ -146,8 +167,9 @@ const ManageEventsTab = ({ events, startEditEvent, deleteEvent }: any) => {
       if (error) throw error;
       setShowHoursModal(false);
       alert("Volunteer hours saved!");
-    } catch (err: any) {
-      alert("Error saving hours: " + err.message);
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : "Unknown error occurred";
+      alert("Error saving hours: " + errorMessage);
     } finally {
       setSavingHours(false);
     }
@@ -161,7 +183,7 @@ const ManageEventsTab = ({ events, startEditEvent, deleteEvent }: any) => {
             No events created yet. Use the <strong>Create Event</strong> tab to add new events.
           </p>
         ) : (
-          events.map((event: any) => (
+          events.map((event: Event) => (
             <div
               key={event.id}
               className="p-4 bg-white border rounded-lg shadow flex flex-col sm:flex-row sm:justify-between sm:items-center"
@@ -169,7 +191,7 @@ const ManageEventsTab = ({ events, startEditEvent, deleteEvent }: any) => {
               <div className="mb-2 sm:mb-0">
                 <div className="font-semibold">{event.title}</div>
                 <div className="text-sm text-gray-600">
-                  <p>{formatDate(event.date, event.time)}</p>
+                  <p>{formatDate(event.date, event.time || undefined)}</p>
                   <p>{event.location}</p>
                   {event.waiver_required && (
                     <p className="text-red-600 font-semibold">Waiver Required</p>
@@ -178,27 +200,39 @@ const ManageEventsTab = ({ events, startEditEvent, deleteEvent }: any) => {
               </div>
               <div className="flex gap-4 flex-wrap">
                 <button
+                  type="button"
                   onClick={() => startEditEvent(event)}
                   className="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 rounded-full text-white font-semibold"
+                  aria-label={`Edit event ${event.title}`}
+                  title={`Edit event ${event.title}`}
                 >
                   Edit
                 </button>
                 <button
+                  type="button"
                   onClick={() => handleDelete(event.id)}
                   className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-full text-white font-semibold"
+                  aria-label={`Delete event ${event.title}`}
+                  title={`Delete event ${event.title}`}
                 >
                   Delete
                 </button>
                 <button
+                  type="button"
                   onClick={() => fetchSignedUpUsers(event.id)}
                   className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-full text-white font-semibold"
+                  aria-label={`View users signed up for ${event.title}`}
+                  title={`View users signed up for ${event.title}`}
                 >
                   View Users
                 </button>
-                {isEventPast(event.date, event.time) && (
+                {isEventPast(event.date, event.time || undefined) && (
                   <button
+                    type="button"
                     onClick={() => handleAddVolunteerHours(event)}
                     className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-full text-white font-semibold"
+                    aria-label={`Add volunteer hours for ${event.title}`}
+                    title={`Add volunteer hours for ${event.title}`}
                   >
                     Add Volunteer Hours
                   </button>
@@ -213,8 +247,11 @@ const ManageEventsTab = ({ events, startEditEvent, deleteEvent }: any) => {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-white bg-opacity-80 backdrop-blur-sm p-4">
           <div className="relative w-full max-w-3xl max-h-[85vh] overflow-y-auto bg-white rounded-3xl shadow-2xl border border-[#cdd1bc] p-8">
             <button
+              type="button"
               onClick={() => setShowModal(false)}
               className="absolute top-4 right-6 text-2xl text-gray-600 hover:text-black font-bold"
+              aria-label="Close modal"
+              title="Close modal"
             >
               ×
             </button>
@@ -224,14 +261,20 @@ const ManageEventsTab = ({ events, startEditEvent, deleteEvent }: any) => {
             {!loadingUsers && signedUpUsers.length > 0 && (
               <div className="flex flex-wrap gap-4 mb-6">
                 <button
+                  type="button"
                   onClick={() => copyField("email")}
                   className="bg-[#70923e] hover:bg-[#5c7c32] text-white px-4 py-2 rounded-full font-semibold flex items-center gap-2"
+                  aria-label="Copy all user emails to clipboard"
+                  title="Copy all user emails to clipboard"
                 >
                   <FaEnvelope /> Copy Emails
                 </button>
                 <button
+                  type="button"
                   onClick={() => copyField("phone")}
                   className="bg-[#70923e] hover:bg-[#5c7c32] text-white px-4 py-2 rounded-full font-semibold flex items-center gap-2"
+                  aria-label="Copy all user phone numbers to clipboard"
+                  title="Copy all user phone numbers to clipboard"
                 >
                   <FaPhone /> Copy Phones
                 </button>
@@ -246,6 +289,7 @@ const ManageEventsTab = ({ events, startEditEvent, deleteEvent }: any) => {
               <ul className="space-y-6">
                 {signedUpUsers.map((signup) => {
                   const user = signup.user;
+                  if (!user) return null;
                   return (
                     <li
                       key={signup.id}
@@ -266,14 +310,17 @@ const ManageEventsTab = ({ events, startEditEvent, deleteEvent }: any) => {
                             {user.role} — {user.status}
                           </p>
                           <p className="text-xs text-gray-400">
-                            Signed up on {formatDate(signup.created_at)}
+                            Signed up on {formatDate(signup.created_at || "")}
                           </p>
                         </div>
 
                         <div className="mt-4 sm:mt-0 flex flex-col gap-2 items-start sm:items-end">
                           <button
+                            type="button"
                             onClick={() => removeSignup(signup.id)}
                             className="bg-red-500 hover:bg-red-600 text-white px-4 py-1.5 text-sm rounded-full font-semibold"
+                            aria-label={`Remove ${user.full_name} from event`}
+                            title={`Remove ${user.full_name} from event`}
                           >
                             Remove User
                           </button>
@@ -293,8 +340,11 @@ const ManageEventsTab = ({ events, startEditEvent, deleteEvent }: any) => {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-white bg-opacity-80 backdrop-blur-sm p-4">
           <div className="relative w-full max-w-xl bg-white rounded-3xl shadow-2xl border border-[#cdd1bc] p-8">
             <button
+              type="button"
               onClick={() => setShowHoursModal(false)}
               className="absolute top-4 right-6 text-2xl text-gray-600 hover:text-black font-bold"
+              aria-label="Close volunteer hours modal"
+              title="Close volunteer hours modal"
             >
               ×
             </button>
@@ -311,22 +361,30 @@ const ManageEventsTab = ({ events, startEditEvent, deleteEvent }: any) => {
                 }}
               >
                 <div className="mb-6 flex items-center gap-4">
-                  <label className="font-semibold">Set hours for all attendees:</label>
+                  <label htmlFor="all-hours" className="font-semibold">
+                    Set hours for all attendees:
+                  </label>
                   <input
+                    id="all-hours"
                     type="number"
                     min="0"
                     step="0.5"
                     className="border rounded px-2 py-1 w-24"
                     placeholder="Hours"
                     onChange={(e) => handleSetAllHours(e.target.value)}
+                    aria-label="Set hours for all attendees"
+                    title="Set the same number of hours for all attendees"
                   />
                   <span className="text-gray-500 text-sm">hours</span>
                 </div>
                 <div className="space-y-4 mb-6">
                   {hoursUsers.map((user) => (
                     <div key={user.id} className="flex items-center gap-4">
-                      <span className="w-40 font-semibold">{user.full_name}</span>
+                      <label htmlFor={`hours-${user.id}`} className="w-40 font-semibold">
+                        {user.full_name}
+                      </label>
                       <input
+                        id={`hours-${user.id}`}
                         type="number"
                         min="0"
                         step="0.5"
@@ -335,6 +393,8 @@ const ManageEventsTab = ({ events, startEditEvent, deleteEvent }: any) => {
                         value={hoursData[user.id] || ""}
                         onChange={(e) => handleHoursChange(user.id, e.target.value)}
                         required
+                        aria-label={`Hours for ${user.full_name}`}
+                        title={`Enter volunteer hours for ${user.full_name}`}
                       />
                       <span className="text-gray-500 text-sm">hours</span>
                     </div>
@@ -344,6 +404,8 @@ const ManageEventsTab = ({ events, startEditEvent, deleteEvent }: any) => {
                   type="submit"
                   className="bg-green-700 hover:bg-green-800 text-white px-6 py-2 rounded-full font-semibold"
                   disabled={savingHours}
+                  aria-label="Save volunteer hours"
+                  title="Save volunteer hours for all users"
                 >
                   {savingHours ? "Saving..." : "Save Hours"}
                 </button>

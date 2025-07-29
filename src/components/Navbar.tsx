@@ -2,9 +2,9 @@ import { useEffect, useState, useLayoutEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X } from "lucide-react";
-import AnnouncementBar from "../components/AnnouncementBar";
-import { useNavbar } from "../context/navbar/NavbarContext";
-import { useAuth } from "../context/auth/AuthContext";
+import AnnouncementBar from "~/components/AnnouncementBar";
+import { useNavbar } from "~/context/navbar/NavbarContext";
+import { useAuth } from "~/context/auth/AuthContext";
 
 const routes = [
   { name: "Home", path: "/" },
@@ -103,8 +103,11 @@ const Navbar = () => {
         {/* Mobile Toggle */}
         <div className="lg:hidden">
           <button
+            type="button"
             onClick={() => setIsOpen(!isOpen)}
             className="text-[#8a9663] hover:scale-110 transition"
+            aria-label={isOpen ? "Close mobile menu" : "Open mobile menu"}
+            title={isOpen ? "Close mobile menu" : "Open mobile menu"}
           >
             {isOpen ? <X size={28} /> : <Menu size={28} />}
           </button>

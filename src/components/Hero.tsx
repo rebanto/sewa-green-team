@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import Typed from "typed.js";
 import { ChevronDown } from "lucide-react";
-import { useNavbar } from "../context/navbar/NavbarContext";
+import { useNavbar } from "~/context/navbar/NavbarContext";
 
 const Hero = () => {
   const typedRef = useRef<HTMLSpanElement>(null);

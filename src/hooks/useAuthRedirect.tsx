@@ -1,10 +1,10 @@
 import { useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useAuth } from "../context/auth/AuthContext";
-import { supabase } from "../lib/supabaseClient";
+import { useAuth } from "~/context/auth/AuthContext";
+import { supabase } from "~/lib/supabaseClient";
 
 export const useAuthRedirect = () => {
-  const { user, session, loading } = useAuth();
+  const { user, session } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -15,7 +15,7 @@ export const useAuthRedirect = () => {
     if (!protectedRoutes.includes(pathname)) return;
 
     // If auth isn't ready yet, skip redirect
-    if (loading) return;
+    if (session === undefined) return;
 
     (async () => {
       if (!user) {
@@ -35,7 +35,7 @@ export const useAuthRedirect = () => {
         if (pathname !== "/not-approved") navigate("/not-approved");
       }
     })();
-  }, [user, session, loading, location, location.pathname, navigate]);
+  }, [user, session, location, location.pathname, navigate]);
 };
 
 // Helper to fetch status
