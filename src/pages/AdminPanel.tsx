@@ -9,6 +9,7 @@ import CreateEventTab from "../components/admin/CreateEventTab";
 import ManageEventsTab from "../components/admin/ManageEventsTab";
 import WebsiteDetailsTab from "../components/admin/WebsiteDetailsTab";
 import { useDeletePastEventPDFs } from "../hooks/useDeletePastEventPDFs";
+import { useDeletePastEventImages } from "../hooks/useDeletePastEventImages";
 
 const tabs = ["Pending Users", "All Users", "Create Event", "Manage Events", "Website Details"];
 
@@ -273,9 +274,25 @@ const AdminPanel = () => {
     },
   );
 
+  // automated deletion of images for past events
+  const deletePastEventImages = useDeletePastEventImages(
+    "events",
+    () =>
+      (events || []).filter((ev) => {
+        return ev.image_id && new Date(ev.date) < new Date();
+      }),
+    (event) => {
+      // the image_id is the file id in the 'images/' folder of the 'events' bucket
+      return event.image_id ? `images/${event.image_id}` : "";
+    }
+  );
+
   useEffect(() => {
     if (events.length > 0) {
       deletePastEventPDFs().then(() => {
+        // Optionally, you can refresh events here if needed
+      });
+      deletePastEventImages().then(() => {
         // Optionally, you can refresh events here if needed
       });
     }
