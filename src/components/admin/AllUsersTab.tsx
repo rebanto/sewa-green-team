@@ -116,7 +116,11 @@ const AllUsersTab = ({
                   </>
                 )}
                 {user.role === "PARENT" && (
-                  <p>Parent user - student information not stored in database</p>
+                  <>
+                    <p>Student Email: {user.student_email}</p>
+                    <p>Student Phone: {user.student_phone}</p>
+                    <p>Student Name: {user.student_name}</p>
+                  </>
                 )}
               </div>
             )}

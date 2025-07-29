@@ -26,16 +26,23 @@ export interface Leader {
 // Legacy alias for WebsiteDetails (for backward compatibility)
 export type WebsiteStats = WebsiteDetails;
 
+// For handling parents
+export type UserWithStudentInfo = User & {
+  student_name?: string;
+  student_email?: string;
+  student_phone?: string;
+};
+
 // Component prop types
 export interface AllUsersTabProps {
-  allUsers: User[];
+  allUsers: UserWithStudentInfo[];
   userRoleFilter: string;
   setUserRoleFilter: (filter: string) => void;
   userStatusFilter: string;
   setUserStatusFilter: (filter: string) => void;
   roles: string[];
   statusOptions: string[];
-  filterUsers: (users: User[], roleFilter: string, statusFilter: string) => User[];
+  filterUsers: (users: UserWithStudentInfo[], roleFilter: string, statusFilter: string) => UserWithStudentInfo[];
   expandedUserId: string | null;
   toggleExpand: (id: string) => void;
   copyToClipboard: (text: string) => void;
@@ -43,14 +50,14 @@ export interface AllUsersTabProps {
 }
 
 export interface PendingUsersTabProps {
-  pendingUsers: User[];
+  pendingUsers: UserWithStudentInfo[];
   pendingRoleFilter: string;
   setPendingRoleFilter: (filter: string) => void;
   pendingStatusFilter: string;
   setPendingStatusFilter: (filter: string) => void;
   roles: string[];
   statusOptions: string[];
-  filterUsers: (users: User[], roleFilter: string, statusFilter: string) => User[];
+  filterUsers: (users: UserWithStudentInfo[], roleFilter: string, statusFilter: string) => UserWithStudentInfo[];
   expandedUserId: string | null;
   toggleExpand: (id: string) => void;
   updateUserStatus: (id: string, status: 'APPROVED' | 'REJECTED') => Promise<void>;

@@ -9,7 +9,7 @@ import ManageEventsTab from "~/components/admin/ManageEventsTab";
 import WebsiteDetailsTab from "~/components/admin/WebsiteDetailsTab";
 import { useDeletePastEventPDFs } from "~/hooks/useDeletePastEventPDFs";
 import { useDeletePastEventImages } from "~/hooks/useDeletePastEventImages";
-import type { User, Event, EventFormData } from "~/types";
+import type { User, Event, EventFormData, UserWithStudentInfo } from "~/types";
 import { useAuth } from "../context/auth/AuthContext";
 
 const tabs = ["Pending Users", "All Users", "Create Event", "Manage Events", "Website Details"];
@@ -20,8 +20,8 @@ const statusOptions = ["ALL", "APPROVED", "PENDING", "REJECTED"];
 const AdminPanel = () => {
   const { user, loading: authLoading } = useAuth();
   const [activeTab, setActiveTab] = useState("Pending Users");
-  const [pendingUsers, setPendingUsers] = useState<User[]>([]);
-  const [allUsers, setAllUsers] = useState<User[]>([]);
+  const [pendingUsers, setPendingUsers] = useState<UserWithStudentInfo[]>([]);
+  const [allUsers, setAllUsers] = useState<UserWithStudentInfo[]>([]);
   const [events, setEvents] = useState<Event[]>([]);
   const [expandedUserId, setExpandedUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -72,7 +72,22 @@ const AdminPanel = () => {
     ]);
 
     // Split users into pending and all users
-    const allUsers = usersResp || [];
+    const allUsers =
+      usersResp?.map((user) => {
+        if (user.role === "PARENT") {
+          const student = usersResp.find(
+            (potential_student) => potential_student.parent_1_name === user.full_name,
+          );
+          return {
+            ...user,
+            student_name: student?.full_name || "",
+            student_email: student?.email || "",
+            student_phone: student?.phone || "",
+          };
+        }
+        return user;
+      }) || [];
+
     const pendingResp = allUsers.filter(
       (u) => u.status === "PENDING" && u.email_confirmed === true,
     );
