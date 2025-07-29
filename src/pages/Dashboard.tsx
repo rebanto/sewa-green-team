@@ -42,12 +42,8 @@ const Dashboard = () => {
   };
 
   const handleLogout = async () => {
+    navigate("/");
     await signOut();
-    setLogoutMessage("Logged out successfully.");
-    setTimeout(() => {
-      setLogoutMessage("");
-      navigate("/");
-    }, 1500);
   };
 
   useEffect(() => {

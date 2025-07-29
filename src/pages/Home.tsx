@@ -4,6 +4,8 @@ import FeaturedEvent from "../components/FeaturedEvent";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import InfoImpactSection from "../components/InfoImpactSection";
+import { useEffect, useState } from "react";
+import { useAuth } from "../context/auth/AuthContext";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
@@ -15,6 +17,14 @@ const fadeUp = {
 };
 
 const Home = () => {
+  const { justSignedOut } = useAuth();
+  const [logoutMessage, setLogoutMessage] = useState("");
+
+  useEffect(() => {
+    if (justSignedOut) setLogoutMessage("Logged out successfully.");
+    else setLogoutMessage("");
+  }, [justSignedOut]);
+
   return (
     <motion.div
       initial="hidden"
@@ -24,6 +34,13 @@ const Home = () => {
         hidden: {},
       }}
     >
+      {/* Logout Message Display */}
+      {logoutMessage && (
+        <div className="fixed top-8 left-1/2 transform -translate-x-1/2 z-50 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg">
+          <p className="font-medium">{logoutMessage}</p>
+        </div>
+      )}
+
       <Hero />
 
       {/* Mission + Stats */}
