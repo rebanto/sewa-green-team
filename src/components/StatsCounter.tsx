@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { useWebsiteStats } from "../hooks/useWebsiteStats";
+import { useWebsiteStats } from "~/hooks/useWebsiteStats";
 
 interface StatProps {
   label: string;

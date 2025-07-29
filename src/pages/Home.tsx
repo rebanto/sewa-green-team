@@ -1,9 +1,9 @@
-import Hero from "../components/Hero";
-import StatsCounter from "../components/StatsCounter";
-import FeaturedEvent from "../components/FeaturedEvent";
+import Hero from "~/components/Hero";
+import StatsCounter from "~/components/StatsCounter";
+import FeaturedEvent from "~/components/FeaturedEvent";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import InfoImpactSection from "../components/InfoImpactSection";
+import InfoImpactSection from "~/components/InfoImpactSection";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },

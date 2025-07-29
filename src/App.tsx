@@ -1,19 +1,19 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Navbar from "./components/Navbar";
-import Footer from "./components/Footer";
-import Home from "./pages/Home";
-import About from "./pages/About";
-import Initiatives from "./pages/Initiatives";
-import GetInvolved from "./pages/GetInvolved";
-import Contact from "./pages/Contact";
-import Gallery from "./pages/Gallery";
-import Dashboard from "./pages/Dashboard";
-import NotApproved from "./pages/NotApproved";
-import AdminPanel from "./pages/AdminPanel";
-import NotAllowed from "./pages/NotAllowed";
-import { useAuthRedirect } from "./hooks/useAuthRedirect";
-import { NavbarProvider } from "./context/navbar/NavbarProvider";
-import { AuthProvider } from "./context/auth/AuthProvider";
+import Navbar from "~/components/Navbar";
+import Footer from "~/components/Footer";
+import Home from "~/pages/Home";
+import About from "~/pages/About";
+import Initiatives from "~/pages/Initiatives";
+import GetInvolved from "~/pages/GetInvolved";
+import Contact from "~/pages/Contact";
+import Gallery from "~/pages/Gallery";
+import Dashboard from "~/pages/Dashboard";
+import NotApproved from "~/pages/NotApproved";
+import AdminPanel from "~/pages/AdminPanel";
+import NotAllowed from "~/pages/NotAllowed";
+import { useAuthRedirect } from "~/hooks/useAuthRedirect";
+import { NavbarProvider } from "~/context/navbar/NavbarProvider";
+import { AuthProvider } from "~/context/auth/AuthProvider";
 
 function App() {
   return (

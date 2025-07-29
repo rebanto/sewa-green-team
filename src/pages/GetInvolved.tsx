@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { supabase } from "../lib/supabaseClient";
-import { useAuth } from "../context/auth/AuthContext";
+import { supabase } from "~/lib/supabaseClient";
+import { useAuth } from "~/context/auth/AuthContext";
+import type { UserRole } from "~/types";
 
 const GetInvolved = () => {
   const { signIn } = useAuth();
@@ -21,7 +22,7 @@ const GetInvolved = () => {
     password: "",
     phone: "",
     lead_id: "",
-    role: "STUDENT",
+    role: "STUDENT" as UserRole,
     parent_1_name: "",
     parent_1_email: "",
     parent_1_phone: "",
@@ -75,80 +76,81 @@ const GetInvolved = () => {
     if (isLogin) {
       try {
         await signIn(formData.email, formData.password);
-      } catch (loginError: any) {
+
+        // After successful sign in, get the current user
+        const { data: userData } = await supabase.auth.getUser();
+        const user = userData?.user;
+        if (!user) {
+          alert("User not found after login.");
+          return;
+        }
+
+        // Check if user exists in users table, if not, insert (even before email is confirmed)
+        const { data: userRow, error: fetchError } = await supabase
+          .from("users")
+          .select("id, status")
+          .eq("id", user.id)
+          .single();
+
+        if (fetchError && fetchError.code !== "PGRST116") {
+          // Not found is ok
+          alert("Error fetching user status");
+          return;
+        }
+
+        if (!userRow) {
+          // Insert user into users table with all info
+          const insertPayload = {
+            id: user.id,
+            full_name: formData.full_name,
+            email: formData.email,
+            phone: formData.phone || null,
+            lead_id: formData.lead_id,
+            role: formData.role,
+            parent_1_name: formData.role === "STUDENT" ? formData.parent_1_name || null : null,
+            parent_1_email: formData.role === "STUDENT" ? formData.parent_1_email || null : null,
+            parent_1_phone: formData.role === "STUDENT" ? formData.parent_1_phone || null : null,
+            parent_2_name: formData.role === "STUDENT" ? formData.parent_2_name || null : null,
+            parent_2_email: formData.role === "STUDENT" ? formData.parent_2_email || null : null,
+            parent_2_phone: formData.role === "STUDENT" ? formData.parent_2_phone || null : null,
+            status: "PENDING" as const,
+          };
+          const { error: dbError } = await supabase.from("users").insert(insertPayload);
+          if (dbError) {
+            alert(dbError.message);
+            return;
+          }
+        }
+
+        if (!user.email_confirmed_at) {
+          alert("Please verify your email before logging in.");
+          setShowResend(true);
+          return;
+        }
+
+        // Update email_confirmed in users table if not already true
+        await supabase
+          .from("users")
+          .update({ email_confirmed: true })
+          .eq("id", user.id)
+          .eq("email_confirmed", false);
+
+        if (userRow?.status === "APPROVED") {
+          navigate("/dashboard");
+        } else {
+          navigate("/not-approved");
+        }
+      } catch (error: unknown) {
         // If the error is about email not confirmed, show resend button
+        const errorMessage = error instanceof Error ? error.message : "Login failed";
         if (
-          loginError?.message?.toLowerCase().includes("confirm") ||
-          loginError?.message?.toLowerCase().includes("verify")
+          errorMessage.toLowerCase().includes("confirm") ||
+          errorMessage.toLowerCase().includes("verify")
         ) {
           setShowResend(true);
         }
-        alert(loginError?.message || "Login failed");
+        alert(errorMessage);
         return;
-      }
-
-      // Always check if email is confirmed
-      const { data: userData } = await supabase.auth.getUser();
-      const user = userData?.user;
-      if (!user) {
-        alert("User not found after login.");
-        return;
-      }
-
-      // Check if user exists in users table, if not, insert (even before email is confirmed)
-      const { data: userRow, error: fetchError } = await supabase
-        .from("users")
-        .select("id, status")
-        .eq("id", user.id)
-        .single();
-
-      if (fetchError && fetchError.code !== "PGRST116") {
-        // Not found is ok
-        alert("Error fetching user status");
-        return;
-      }
-
-      if (!userRow) {
-        // Insert user into users table with all info
-        const insertPayload = {
-          id: user.id,
-          full_name: formData.full_name,
-          email: formData.email,
-          phone: formData.phone || null,
-          lead_id: formData.lead_id,
-          role: formData.role,
-          parent_1_name: formData.role === "STUDENT" ? formData.parent_1_name || null : null,
-          parent_1_email: formData.role === "STUDENT" ? formData.parent_1_email || null : null,
-          parent_1_phone: formData.role === "STUDENT" ? formData.parent_1_phone || null : null,
-          parent_2_name: formData.role === "STUDENT" ? formData.parent_2_name || null : null,
-          parent_2_email: formData.role === "STUDENT" ? formData.parent_2_email || null : null,
-          parent_2_phone: formData.role === "STUDENT" ? formData.parent_2_phone || null : null,
-          status: "PENDING",
-        };
-        const { error: dbError } = await supabase.from("users").insert(insertPayload);
-        if (dbError) {
-          alert(dbError.message);
-          return;
-        }
-      }
-
-      if (!user.email_confirmed_at) {
-        alert("Please verify your email before logging in.");
-        setShowResend(true);
-        return;
-      }
-
-      // Update email_confirmed in users table if not already true
-      await supabase
-        .from("users")
-        .update({ email_confirmed: true })
-        .eq("id", user.id)
-        .eq("email_confirmed", false);
-
-      if (userRow?.status === "APPROVED") {
-        navigate("/dashboard");
-      } else {
-        navigate("/not-approved");
       }
     } else {
       const { data, error: signUpError } = await supabase.auth.signUp({
@@ -166,8 +168,13 @@ const GetInvolved = () => {
 
       // Insert user into users table immediately after signup (before confirmation)
       // Always insert a row using email as unique key if user.id is not available
+      if (!data.user?.id) {
+        alert("User registration failed - no user ID returned");
+        return;
+      }
+
       const insertPayload = {
-        id: data.user?.id || null, // May be null if user not returned
+        id: data.user.id,
         full_name: formData.full_name,
         email: formData.email,
         phone: formData.phone || null,
@@ -179,7 +186,7 @@ const GetInvolved = () => {
         parent_2_name: formData.role === "STUDENT" ? formData.parent_2_name || null : null,
         parent_2_email: formData.role === "STUDENT" ? formData.parent_2_email || null : null,
         parent_2_phone: formData.role === "STUDENT" ? formData.parent_2_phone || null : null,
-        status: "PENDING",
+        status: "PENDING" as const,
       };
       // Upsert to avoid duplicate rows if user signs up again before confirming
       const { error: dbError } = await supabase
@@ -223,6 +230,7 @@ const GetInvolved = () => {
         <div className="mb-6 text-center text-sm text-[#5e6651]">
           {isLogin ? "Don't have an account?" : "Already have an account?"}{" "}
           <button
+            type="button"
             onClick={toggleLogin}
             className="text-[#8a9663] font-semibold hover:underline transition"
           >
@@ -253,16 +261,24 @@ const GetInvolved = () => {
 
           {!isLogin && (
             <>
-              <select
-                title="Role select"
-                name="role"
-                onChange={handleChange}
-                value={formData.role}
-                className="w-full p-3 rounded-lg border border-[#cdd1bc] bg-white text-[#4d5640] font-medium"
-              >
-                <option value="STUDENT">I’m a Student</option>
-                <option value="PARENT">I’m a Parent</option>
-              </select>
+              <div>
+                <label htmlFor="role-select" className="block font-medium mb-1">
+                  I am a <span className="text-red-500">*</span>
+                </label>
+                <select
+                  id="role-select"
+                  title="Role select"
+                  name="role"
+                  onChange={handleChange}
+                  value={formData.role}
+                  className="w-full p-3 rounded-lg border border-[#cdd1bc] bg-white text-[#4d5640] font-medium"
+                  aria-label="Select your role"
+                  required
+                >
+                  <option value="STUDENT">I’m a Student</option>
+                  <option value="PARENT">I’m a Parent</option>
+                </select>
+              </div>
 
               <label className="block font-medium mb-1" htmlFor="full_name">
                 Your Full Name <span className="text-red-500">*</span>

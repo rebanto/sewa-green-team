@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { FaLeaf, FaRecycle, FaWater, FaHeart, FaTree, FaCheckDouble } from "react-icons/fa";
-import { supabase } from "../lib/supabaseClient";
+import { supabase } from "~/lib/supabaseClient";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 40 },

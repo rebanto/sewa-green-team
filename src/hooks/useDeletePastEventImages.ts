@@ -1,4 +1,5 @@
-import { supabase } from "../lib/supabaseClient";
+import { supabase } from "~/lib/supabaseClient";
+import type { Event } from "~/types";
 
 /**
  * Hook to delete images for past events from the Supabase 'events' bucket.
@@ -8,8 +9,8 @@ import { supabase } from "../lib/supabaseClient";
  */
 export function useDeletePastEventImages(
   bucketName: string,
-  getPastEvents: () => any[],
-  getImagePath: (event: any) => string
+  getPastEvents: () => Event[],
+  getImagePath: (event: Event) => string | null
 ) {
   return async function deletePastEventImages() {
     const pastEvents = getPastEvents();

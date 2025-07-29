@@ -16,6 +16,8 @@ export default function AnnouncementBar() {
         target="_blank"
         rel="noopener noreferrer"
         className="inline-block bg-white text-[#8a9663] font-bold px-4 py-1 rounded-full shadow hover:bg-[#f3fadd] transition-colors duration-200 text-sm md:text-base"
+        aria-label="Apply now to join the Sewa Green Team"
+        title="Apply now to join the Sewa Green Team"
       >
         Apply Now
       </a>

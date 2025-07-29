@@ -1,7 +1,13 @@
 import { useRef, useState, useEffect } from "react";
-import { supabase } from "../../lib/supabaseClient";
+import { supabase } from "~/lib/supabaseClient";
+import type { CreateEventTabProps } from "~/types";
 
-const CreateEventTab = ({ eventForm, handleEventChange, saveEvent, setEventForm }: any) => {
+const CreateEventTab = ({
+  eventForm,
+  handleEventChange,
+  saveEvent,
+  setEventForm,
+}: CreateEventTabProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
   const [currentImageUrl, setCurrentImageUrl] = useState<string | null>(null);
@@ -49,49 +55,94 @@ const CreateEventTab = ({ eventForm, handleEventChange, saveEvent, setEventForm 
         }
         className="space-y-4 max-w-xl mx-auto"
       >
-        <input
-          name="title"
-          value={eventForm.title}
-          onChange={handleEventChange}
-          placeholder="Event Title"
-          required
-          className="formInput"
-        />
-        <textarea
-          name="description"
-          value={eventForm.description}
-          onChange={handleEventChange}
-          placeholder="Event Description"
-          required
-          className="formInput"
-        />
-        <input
-          type="date"
-          name="date"
-          value={eventForm.date}
-          onChange={handleEventChange}
-          required
-          className="formInput"
-        />
-        <input
-          type="time"
-          name="time"
-          value={eventForm.time}
-          onChange={handleEventChange}
-          required
-          className="formInput"
-        />
-        <input
-          name="location"
-          value={eventForm.location}
-          onChange={handleEventChange}
-          placeholder="Location"
-          required
-          className="formInput"
-        />
         <div>
-          <label className="block mb-1 font-semibold">Event Image (Optional)</label>
-          <input type="file" accept="image/*" ref={imageInputRef} className="formInput" />
+          <label htmlFor="event-title" className="block mb-1 font-semibold">
+            Event Title <span className="text-red-500">*</span>
+          </label>
+          <input
+            id="event-title"
+            name="title"
+            value={eventForm.title}
+            onChange={handleEventChange}
+            placeholder="Event Title"
+            required
+            className="formInput"
+            aria-label="Event title"
+          />
+        </div>
+        <div>
+          <label htmlFor="event-description" className="block mb-1 font-semibold">
+            Event Description <span className="text-red-500">*</span>
+          </label>
+          <textarea
+            id="event-description"
+            name="description"
+            value={eventForm.description}
+            onChange={handleEventChange}
+            placeholder="Event Description"
+            required
+            className="formInput"
+            aria-label="Event description"
+          />
+        </div>
+        <div>
+          <label htmlFor="event-date" className="block mb-1 font-semibold">
+            Event Date <span className="text-red-500">*</span>
+          </label>
+          <input
+            id="event-date"
+            type="date"
+            name="date"
+            value={eventForm.date}
+            onChange={handleEventChange}
+            required
+            className="formInput"
+            aria-label="Event date"
+          />
+        </div>
+        <div>
+          <label htmlFor="event-time" className="block mb-1 font-semibold">
+            Event Time <span className="text-red-500">*</span>
+          </label>
+          <input
+            id="event-time"
+            type="time"
+            name="time"
+            value={eventForm.time}
+            onChange={handleEventChange}
+            required
+            className="formInput"
+            aria-label="Event time"
+          />
+        </div>
+        <div>
+          <label htmlFor="event-location" className="block mb-1 font-semibold">
+            Location <span className="text-red-500">*</span>
+          </label>
+          <input
+            id="event-location"
+            name="location"
+            value={eventForm.location}
+            onChange={handleEventChange}
+            placeholder="Location"
+            required
+            className="formInput"
+            aria-label="Event location"
+          />
+        </div>
+        <div>
+          <label htmlFor="event-image" className="block mb-1 font-semibold">
+            Event Image (Optional)
+          </label>
+          <input
+            id="event-image"
+            type="file"
+            accept="image/*"
+            ref={imageInputRef}
+            className="formInput"
+            aria-label="Upload event image"
+            title="Upload an image for the event"
+          />
           {currentImageUrl && (
             <div className="mt-2">
               <p className="text-xs mb-1">Current image:</p>
@@ -114,15 +165,18 @@ const CreateEventTab = ({ eventForm, handleEventChange, saveEvent, setEventForm 
         </label>
         {eventForm.waiver_required && (
           <div>
-            <label className="block mb-1 font-semibold">
+            <label htmlFor="waiver-file" className="block mb-1 font-semibold">
               Upload Waiver PDF <span className="text-red-600">*</span>
             </label>
             <input
+              id="waiver-file"
               type="file"
               accept="application/pdf"
               ref={fileInputRef}
               className="formInput"
               required={!eventForm.waiver_url}
+              aria-label="Upload waiver PDF file"
+              title="Upload a PDF waiver file for the event"
             />
             {eventForm.waiver_url && eventForm.date >= new Date().toISOString().split("T")[0] && (
               <p className="text-xs mt-1">

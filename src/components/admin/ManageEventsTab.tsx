@@ -1,11 +1,17 @@
-import React, { useState } from "react";
-import { supabase } from "../../lib/supabaseClient";
-import { FaUser, FaEnvelope, FaPhone, FaCheckCircle, FaTimesCircle, FaCopy } from "react-icons/fa";
+import { useState } from "react";
+import { supabase } from "~/lib/supabaseClient";
+import { FaUser, FaEnvelope, FaPhone } from "react-icons/fa";
+import type { ManageEventsTabProps, Event, User } from "~/types";
 
-const ManageEventsTab = ({ events, startEditEvent, deleteEvent }: any) => {
+interface SignedUpUser extends User {
+  signup_id: string;
+  created_at: string;
+}
+
+const ManageEventsTab = ({ events, startEditEvent, deleteEvent }: ManageEventsTabProps) => {
   const [showModal, setShowModal] = useState(false);
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
-  const [signedUpUsers, setSignedUpUsers] = useState<any[]>([]);
+  const [signedUpUsers, setSignedUpUsers] = useState<SignedUpUser[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(false);
 
   // Helper to check if event is in the past
@@ -17,9 +23,9 @@ const ManageEventsTab = ({ events, startEditEvent, deleteEvent }: any) => {
 
   // Volunteer Hours Modal State
   const [showHoursModal, setShowHoursModal] = useState(false);
-  const [hoursEvent, setHoursEvent] = useState<any>(null);
+  const [hoursEvent, setHoursEvent] = useState<Event | null>(null);
   const [hoursData, setHoursData] = useState<{ [userId: string]: number }>({});
-  const [hoursUsers, setHoursUsers] = useState<any[]>([]);
+  const [hoursUsers, setHoursUsers] = useState<User[]>([]);
   const [savingHours, setSavingHours] = useState(false);
 
   const formatDate = (dateStr: string, timeStr?: string) => {
@@ -178,27 +184,39 @@ const ManageEventsTab = ({ events, startEditEvent, deleteEvent }: any) => {
               </div>
               <div className="flex gap-4 flex-wrap">
                 <button
+                  type="button"
                   onClick={() => startEditEvent(event)}
                   className="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 rounded-full text-white font-semibold"
+                  aria-label={`Edit event ${event.title}`}
+                  title={`Edit event ${event.title}`}
                 >
                   Edit
                 </button>
                 <button
+                  type="button"
                   onClick={() => handleDelete(event.id)}
                   className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-full text-white font-semibold"
+                  aria-label={`Delete event ${event.title}`}
+                  title={`Delete event ${event.title}`}
                 >
                   Delete
                 </button>
                 <button
+                  type="button"
                   onClick={() => fetchSignedUpUsers(event.id)}
                   className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-full text-white font-semibold"
+                  aria-label={`View users signed up for ${event.title}`}
+                  title={`View users signed up for ${event.title}`}
                 >
                   View Users
                 </button>
                 {isEventPast(event.date, event.time) && (
                   <button
+                    type="button"
                     onClick={() => handleAddVolunteerHours(event)}
                     className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-full text-white font-semibold"
+                    aria-label={`Add volunteer hours for ${event.title}`}
+                    title={`Add volunteer hours for ${event.title}`}
                   >
                     Add Volunteer Hours
                   </button>
@@ -213,8 +231,11 @@ const ManageEventsTab = ({ events, startEditEvent, deleteEvent }: any) => {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-white bg-opacity-80 backdrop-blur-sm p-4">
           <div className="relative w-full max-w-3xl max-h-[85vh] overflow-y-auto bg-white rounded-3xl shadow-2xl border border-[#cdd1bc] p-8">
             <button
+              type="button"
               onClick={() => setShowModal(false)}
               className="absolute top-4 right-6 text-2xl text-gray-600 hover:text-black font-bold"
+              aria-label="Close modal"
+              title="Close modal"
             >
               ×
             </button>
@@ -224,14 +245,20 @@ const ManageEventsTab = ({ events, startEditEvent, deleteEvent }: any) => {
             {!loadingUsers && signedUpUsers.length > 0 && (
               <div className="flex flex-wrap gap-4 mb-6">
                 <button
+                  type="button"
                   onClick={() => copyField("email")}
                   className="bg-[#70923e] hover:bg-[#5c7c32] text-white px-4 py-2 rounded-full font-semibold flex items-center gap-2"
+                  aria-label="Copy all user emails to clipboard"
+                  title="Copy all user emails to clipboard"
                 >
                   <FaEnvelope /> Copy Emails
                 </button>
                 <button
+                  type="button"
                   onClick={() => copyField("phone")}
                   className="bg-[#70923e] hover:bg-[#5c7c32] text-white px-4 py-2 rounded-full font-semibold flex items-center gap-2"
+                  aria-label="Copy all user phone numbers to clipboard"
+                  title="Copy all user phone numbers to clipboard"
                 >
                   <FaPhone /> Copy Phones
                 </button>
@@ -272,8 +299,11 @@ const ManageEventsTab = ({ events, startEditEvent, deleteEvent }: any) => {
 
                         <div className="mt-4 sm:mt-0 flex flex-col gap-2 items-start sm:items-end">
                           <button
+                            type="button"
                             onClick={() => removeSignup(signup.id)}
                             className="bg-red-500 hover:bg-red-600 text-white px-4 py-1.5 text-sm rounded-full font-semibold"
+                            aria-label={`Remove ${signup.user.full_name} from event`}
+                            title={`Remove ${signup.user.full_name} from event`}
                           >
                             Remove User
                           </button>
@@ -293,8 +323,11 @@ const ManageEventsTab = ({ events, startEditEvent, deleteEvent }: any) => {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-white bg-opacity-80 backdrop-blur-sm p-4">
           <div className="relative w-full max-w-xl bg-white rounded-3xl shadow-2xl border border-[#cdd1bc] p-8">
             <button
+              type="button"
               onClick={() => setShowHoursModal(false)}
               className="absolute top-4 right-6 text-2xl text-gray-600 hover:text-black font-bold"
+              aria-label="Close volunteer hours modal"
+              title="Close volunteer hours modal"
             >
               ×
             </button>
@@ -311,22 +344,30 @@ const ManageEventsTab = ({ events, startEditEvent, deleteEvent }: any) => {
                 }}
               >
                 <div className="mb-6 flex items-center gap-4">
-                  <label className="font-semibold">Set hours for all attendees:</label>
+                  <label htmlFor="all-hours" className="font-semibold">
+                    Set hours for all attendees:
+                  </label>
                   <input
+                    id="all-hours"
                     type="number"
                     min="0"
                     step="0.5"
                     className="border rounded px-2 py-1 w-24"
                     placeholder="Hours"
                     onChange={(e) => handleSetAllHours(e.target.value)}
+                    aria-label="Set hours for all attendees"
+                    title="Set the same number of hours for all attendees"
                   />
                   <span className="text-gray-500 text-sm">hours</span>
                 </div>
                 <div className="space-y-4 mb-6">
                   {hoursUsers.map((user) => (
                     <div key={user.id} className="flex items-center gap-4">
-                      <span className="w-40 font-semibold">{user.full_name}</span>
+                      <label htmlFor={`hours-${user.id}`} className="w-40 font-semibold">
+                        {user.full_name}
+                      </label>
                       <input
+                        id={`hours-${user.id}`}
                         type="number"
                         min="0"
                         step="0.5"
@@ -335,6 +376,8 @@ const ManageEventsTab = ({ events, startEditEvent, deleteEvent }: any) => {
                         value={hoursData[user.id] || ""}
                         onChange={(e) => handleHoursChange(user.id, e.target.value)}
                         required
+                        aria-label={`Hours for ${user.full_name}`}
+                        title={`Enter volunteer hours for ${user.full_name}`}
                       />
                       <span className="text-gray-500 text-sm">hours</span>
                     </div>
@@ -344,6 +387,8 @@ const ManageEventsTab = ({ events, startEditEvent, deleteEvent }: any) => {
                   type="submit"
                   className="bg-green-700 hover:bg-green-800 text-white px-6 py-2 rounded-full font-semibold"
                   disabled={savingHours}
+                  aria-label="Save volunteer hours"
+                  title="Save volunteer hours for all users"
                 >
                   {savingHours ? "Saving..." : "Save Hours"}
                 </button>

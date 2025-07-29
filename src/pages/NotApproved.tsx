@@ -10,15 +10,20 @@ const NotApproved = () => {
         <a
           href="/"
           className="inline-block px-6 py-2 bg-[#8a9663] text-white rounded-full font-semibold hover:bg-[#73814f] transition"
+          aria-label="Go to home page"
+          title="Go to home page"
         >
           Go to Home
         </a>
         <button
+          type="button"
           onClick={async () => {
             await import("../lib/supabaseClient").then(({ supabase }) => supabase.auth.signOut());
             window.location.href = "/";
           }}
           className="inline-block ml-4 px-6 py-2 bg-red-500 text-white rounded-full font-semibold hover:bg-red-600 transition"
+          aria-label="Log out of account"
+          title="Log out of account"
         >
           Log Out
         </button>
