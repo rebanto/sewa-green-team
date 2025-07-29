@@ -63,7 +63,6 @@ export type Database = {
           description: string
           id: string
           image_id: string | null
-          image_path: string | null
           location: string
           time: string | null
           title: string
@@ -76,7 +75,6 @@ export type Database = {
           description: string
           id?: string
           image_id?: string | null
-          image_path?: string | null
           location: string
           time?: string | null
           title: string
@@ -89,7 +87,6 @@ export type Database = {
           description?: string
           id?: string
           image_id?: string | null
-          image_path?: string | null
           location?: string
           time?: string | null
           title?: string

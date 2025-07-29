@@ -1,3 +1,5 @@
+import React from "react";
+import type { FileObject } from "@supabase/storage-js";
 import type { Tables, Enums } from "@/supabase.types";
 
 // Re-export Supabase types with more convenient names
@@ -10,6 +12,9 @@ export type WebsiteDetails = Tables<"website_details">;
 // Re-export enums
 export type UserRole = Enums<"user_role">;
 export type ApprovalStatus = Enums<"approval_status">;
+
+// Export image
+export type EventWithImage = Event & { image: FileObject | null; imageUrl: string | null };
 
 // Extended types for application use
 export interface VolunteerHoursWithEvent extends VolunteerHours {
@@ -84,6 +89,12 @@ export interface WebsiteDetailsTabProps {
   featuredEventId: string;
   setFeaturedEventId: (id: string) => void;
   handleFeaturedEventSave: () => Promise<void>;
+}
+
+export interface EventModalProps {
+  selectedEvent: EventWithImage;
+  setShowEventModal: React.Dispatch<React.SetStateAction<boolean>>;
+  formatDate: (dateStr: string) => string;
 }
 
 // Form data types
