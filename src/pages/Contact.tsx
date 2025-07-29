@@ -25,11 +25,7 @@ const Contact = () => {
               src="https://docs.google.com/forms/d/e/1FAIpQLSdVX3BzNiLpZ_J-UodBlZ0dWARLwreyP3l5dsUod_7aSgv-ww/viewform?embedded=true"
               width="100%"
               height="1014"
-              frameBorder="0"
-              marginHeight={0}
-              marginWidth={0}
-              className="rounded-lg border border-[#cdd1bc] shadow-md min-h-[600px]"
-              style={{ background: "#fff" }}
+              className="rounded-lg border border-[#cdd1bc] shadow-md min-h-[600px] bg-white"
             >
               Loading…
             </iframe>
