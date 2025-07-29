@@ -7,6 +7,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [justSignedOut, setJustSignedOut] = useState(false);
 
   useEffect(() => {
     // Initialize session & user
@@ -39,10 +40,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setLoading(true);
     await supabase.auth.signOut();
     setLoading(false);
+    setJustSignedOut(true);
+    setTimeout(() => setJustSignedOut(false), 2000);
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, signIn, signOut }}>
+    <AuthContext.Provider value={{ user, session, loading, signIn, signOut, justSignedOut }}>
       {children}
     </AuthContext.Provider>
   );

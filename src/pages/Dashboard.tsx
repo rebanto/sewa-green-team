@@ -22,7 +22,7 @@ import type {
 } from "~/types";
 
 const Dashboard = () => {
-  const { user: authUser, loading: authLoading } = useAuth();
+  const { user: authUser, signOut, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(true);
   const [userData, setUserData] = useState<User | null>(null);
   const [events, setEvents] = useState<Event[]>([]);
@@ -48,8 +48,8 @@ const Dashboard = () => {
   };
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
     navigate("/");
+    await signOut();
   };
 
   useEffect(() => {
