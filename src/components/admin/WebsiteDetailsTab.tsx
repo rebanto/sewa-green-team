@@ -1,12 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { supabase } from "~/lib/supabaseClient";
-
-// Define Leader type
-interface Leader {
-  name: string;
-  role: string;
-  image_url: string;
-}
+import type { Json } from "@/supabase.types";
+import type { Leader } from "~/types";
 
 const WebsiteDetailsTab = () => {
   const [stats, setStats] = useState({
@@ -141,7 +136,7 @@ const WebsiteDetailsTab = () => {
     // Save leadership to DB
     const { error } = await supabase
       .from("website_details")
-      .update({ leadership: leadership as unknown as any })
+      .update({ leadership: leadership as unknown as Json })
       .eq("id", 1);
     if (error) {
       setLeadershipSaving(false);

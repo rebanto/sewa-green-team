@@ -3,14 +3,23 @@ import { supabase } from "~/lib/supabaseClient";
 import { FaUser, FaEnvelope, FaPhone } from "react-icons/fa";
 import type { ManageEventsTabProps, Event, User } from "~/types";
 
-interface SignedUpUser extends User {
-  signup_id: string;
-  created_at: string;
+interface SignedUpUser {
+  id: string;
+  status: string | null;
+  user_id: string | null;
+  event_id: string | null;
+  created_at: string | null;
+  user: User | null;
+}
+
+interface HoursUser {
+  id: string;
+  full_name: string;
+  email: string;
 }
 
 const ManageEventsTab = ({ events, startEditEvent, deleteEvent }: ManageEventsTabProps) => {
   const [showModal, setShowModal] = useState(false);
-  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [signedUpUsers, setSignedUpUsers] = useState<SignedUpUser[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(false);
 
@@ -25,7 +34,7 @@ const ManageEventsTab = ({ events, startEditEvent, deleteEvent }: ManageEventsTa
   const [showHoursModal, setShowHoursModal] = useState(false);
   const [hoursEvent, setHoursEvent] = useState<Event | null>(null);
   const [hoursData, setHoursData] = useState<{ [userId: string]: number }>({});
-  const [hoursUsers, setHoursUsers] = useState<User[]>([]);
+  const [hoursUsers, setHoursUsers] = useState<HoursUser[]>([]);
   const [savingHours, setSavingHours] = useState(false);
 
   const formatDate = (dateStr: string, timeStr?: string) => {
@@ -49,7 +58,6 @@ const ManageEventsTab = ({ events, startEditEvent, deleteEvent }: ManageEventsTa
   const fetchSignedUpUsers = async (eventId: string) => {
     setLoadingUsers(true);
     setSignedUpUsers([]);
-    setSelectedEventId(eventId);
     setShowModal(true);
 
     try {
@@ -75,9 +83,10 @@ const ManageEventsTab = ({ events, startEditEvent, deleteEvent }: ManageEventsTa
         .eq("event_id", eventId);
 
       if (error) throw error;
-      setSignedUpUsers(data || []);
-    } catch (error: any) {
-      alert("Failed to load signed up users: " + error.message);
+      setSignedUpUsers((data as SignedUpUser[]) || []);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
+      alert("Failed to load signed up users: " + errorMessage);
     } finally {
       setLoadingUsers(false);
     }
@@ -100,17 +109,21 @@ const ManageEventsTab = ({ events, startEditEvent, deleteEvent }: ManageEventsTa
   };
 
   // Open modal and fetch users for event
-  const handleAddVolunteerHours = async (event: any) => {
+  const handleAddVolunteerHours = async (event: Event) => {
     setHoursEvent(event);
     setShowHoursModal(true);
     setSavingHours(false);
     setHoursData({});
     // Fetch users signed up for this event
-    const { data, error } = await supabase
+    const { data } = await supabase
       .from("event_signups")
       .select("id, user_id, user:users(id, full_name, email)")
       .eq("event_id", event.id);
-    setHoursUsers(data?.map((s: any) => s.user) || []);
+    setHoursUsers(
+      data
+        ?.map((s: { user: HoursUser | null }) => s.user)
+        .filter((user): user is HoursUser => user !== null) || [],
+    );
   };
 
   // Handle input change
@@ -131,10 +144,12 @@ const ManageEventsTab = ({ events, startEditEvent, deleteEvent }: ManageEventsTa
 
   // Save volunteer hours to Supabase
   const handleSaveVolunteerHours = async () => {
+    if (!hoursEvent) return;
+
     setSavingHours(true);
     try {
       const inserts = Object.entries(hoursData)
-        .filter(([_, hours]) => hours > 0)
+        .filter(([, hours]) => hours > 0)
         .map(([userId, hours]) => ({
           event_id: hoursEvent.id,
           user_id: userId,
@@ -152,8 +167,9 @@ const ManageEventsTab = ({ events, startEditEvent, deleteEvent }: ManageEventsTa
       if (error) throw error;
       setShowHoursModal(false);
       alert("Volunteer hours saved!");
-    } catch (err: any) {
-      alert("Error saving hours: " + err.message);
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : "Unknown error occurred";
+      alert("Error saving hours: " + errorMessage);
     } finally {
       setSavingHours(false);
     }
@@ -167,7 +183,7 @@ const ManageEventsTab = ({ events, startEditEvent, deleteEvent }: ManageEventsTa
             No events created yet. Use the <strong>Create Event</strong> tab to add new events.
           </p>
         ) : (
-          events.map((event: any) => (
+          events.map((event: Event) => (
             <div
               key={event.id}
               className="p-4 bg-white border rounded-lg shadow flex flex-col sm:flex-row sm:justify-between sm:items-center"
@@ -175,7 +191,7 @@ const ManageEventsTab = ({ events, startEditEvent, deleteEvent }: ManageEventsTa
               <div className="mb-2 sm:mb-0">
                 <div className="font-semibold">{event.title}</div>
                 <div className="text-sm text-gray-600">
-                  <p>{formatDate(event.date, event.time)}</p>
+                  <p>{formatDate(event.date, event.time || undefined)}</p>
                   <p>{event.location}</p>
                   {event.waiver_required && (
                     <p className="text-red-600 font-semibold">Waiver Required</p>
@@ -210,7 +226,7 @@ const ManageEventsTab = ({ events, startEditEvent, deleteEvent }: ManageEventsTa
                 >
                   View Users
                 </button>
-                {isEventPast(event.date, event.time) && (
+                {isEventPast(event.date, event.time || undefined) && (
                   <button
                     type="button"
                     onClick={() => handleAddVolunteerHours(event)}
@@ -273,6 +289,7 @@ const ManageEventsTab = ({ events, startEditEvent, deleteEvent }: ManageEventsTa
               <ul className="space-y-6">
                 {signedUpUsers.map((signup) => {
                   const user = signup.user;
+                  if (!user) return null;
                   return (
                     <li
                       key={signup.id}
@@ -293,7 +310,7 @@ const ManageEventsTab = ({ events, startEditEvent, deleteEvent }: ManageEventsTa
                             {user.role} — {user.status}
                           </p>
                           <p className="text-xs text-gray-400">
-                            Signed up on {formatDate(signup.created_at)}
+                            Signed up on {formatDate(signup.created_at || "")}
                           </p>
                         </div>
 
@@ -302,8 +319,8 @@ const ManageEventsTab = ({ events, startEditEvent, deleteEvent }: ManageEventsTa
                             type="button"
                             onClick={() => removeSignup(signup.id)}
                             className="bg-red-500 hover:bg-red-600 text-white px-4 py-1.5 text-sm rounded-full font-semibold"
-                            aria-label={`Remove ${signup.user.full_name} from event`}
-                            title={`Remove ${signup.user.full_name} from event`}
+                            aria-label={`Remove ${user.full_name} from event`}
+                            title={`Remove ${user.full_name} from event`}
                           >
                             Remove User
                           </button>

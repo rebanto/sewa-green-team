@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { FaLeaf, FaRecycle, FaWater, FaHeart, FaTree, FaCheckDouble } from "react-icons/fa";
 import { supabase } from "~/lib/supabaseClient";
+import type { Leader } from "~/types";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 40 },
@@ -60,12 +61,6 @@ const pillars = [
   },
 ];
 
-interface Leader {
-  name: string;
-  role: string;
-  image_url: string;
-}
-
 const About = () => {
   const [leadership, setLeadership] = useState<Leader[]>([]);
   const [loading, setLoading] = useState(true);
@@ -80,7 +75,7 @@ const About = () => {
       }
 
       if (data && data.leadership) {
-        setLeadership(data.leadership);
+        setLeadership((data.leadership as unknown as Leader[]) || []);
       }
 
       setLoading(false);

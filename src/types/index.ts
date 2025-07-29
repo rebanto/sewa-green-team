@@ -16,6 +16,13 @@ export interface VolunteerHoursWithEvent extends VolunteerHours {
   event?: Event;
 }
 
+// Leadership data structure
+export interface Leader {
+  name: string;
+  role: string;
+  image_url: string;
+}
+
 // Legacy alias for WebsiteDetails (for backward compatibility)
 export type WebsiteStats = WebsiteDetails;
 
