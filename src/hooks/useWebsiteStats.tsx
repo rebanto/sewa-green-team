@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { supabase } from "~/lib/supabaseClient";
+import { supabase } from "~/lib/supabase";
 
 export const useWebsiteStats = () => {
   const [stats, setStats] = useState({ volunteers: 0, trash: 0, events: 0 });

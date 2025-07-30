@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "~/lib/supabaseClient";
+import { supabase } from "~/lib/supabase";
 import clsx from "clsx";
 import PendingUsersTab from "~/components/admin/PendingUsersTab";
 import AllUsersTab from "~/components/admin/AllUsersTab";
@@ -8,8 +8,9 @@ import CreateEventTab from "~/components/admin/CreateEventTab";
 import ManageEventsTab from "~/components/admin/ManageEventsTab";
 import WebsiteDetailsTab from "~/components/admin/WebsiteDetailsTab";
 import { useDeletePastEventPDFs } from "~/hooks/useDeletePastEventPDFs";
-import { useDeletePastEventImages } from "~/hooks/useDeletePastEventImages";
+// import { useDeletePastEventImages } from "~/hooks/useDeletePastEventImages";
 import type { User, Event, EventFormData, UserWithStudentInfo } from "~/types";
+// import type { FileObject } from "@supabase/storage-js";
 import { useAuth } from "../context/auth/AuthContext";
 
 const tabs = ["Pending Users", "All Users", "Create Event", "Manage Events", "Website Details"];
@@ -25,6 +26,7 @@ const AdminPanel = () => {
   const [events, setEvents] = useState<Event[]>([]);
   const [expandedUserId, setExpandedUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  // const [imageMap, setImageMap] = useState<Map<string, FileObject>>(new Map());
   const [userRoleFilter, setUserRoleFilter] = useState("ALL");
   const [pendingRoleFilter, setPendingRoleFilter] = useState("ALL");
   const [userStatusFilter, setUserStatusFilter] = useState("ALL");
@@ -70,6 +72,22 @@ const AdminPanel = () => {
       supabase.from("events").select("*").order("date", { ascending: true }),
       supabase.from("users").select("*").order("full_name", { ascending: true }),
     ]);
+
+    // Fetch images from storage for imageMap
+    // try {
+    //   const { data: allImages, error: imageError } = await supabase.storage
+    //     .from("events")
+    //     .list("images", { limit: 1000 });
+
+    //   if (imageError) throw imageError;
+
+    // Create image map for efficient lookup
+    // const newImageMap = new Map(allImages.map((image) => [image.id, image]));
+    // setImageMap(newImageMap);
+    // } catch (error) {
+    // console.error("Error fetching images:", error);
+    // setImageMap(new Map());
+    // }
 
     // Split users into pending and all users
     const allUsers =
@@ -139,9 +157,10 @@ const AdminPanel = () => {
 
   // Create or update event
   // Prevent editing a past event to a future date
-  const saveEvent = async (e: React.FormEvent, waiverFile?: File) => {
+  const saveEvent = async (e: React.FormEvent, waiverFile?: File, imageFile?: File) => {
     e.preventDefault();
     const eventId = eventForm.id ? String(eventForm.id) : "";
+    let image_id = eventForm.image_id || "";
     const formattedDate = eventForm.date ? eventForm.date.split("T")[0] : "";
     let waiver_url = eventForm.waiver_url || "";
     const now = new Date().toISOString().split("T")[0];
@@ -167,6 +186,20 @@ const AdminPanel = () => {
       const { data: publicUrlData } = supabase.storage.from("waivers").getPublicUrl(fileName);
       waiver_url = publicUrlData.publicUrl;
     }
+
+    if (imageFile) {
+      // Upload image to Supabase Storage
+      const fileExt = imageFile.name.split(".").pop();
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 11)}.${fileExt}`;
+      const { data, error } = await supabase.storage
+        .from("events")
+        .upload(`images/${fileName}`, imageFile, { upsert: true });
+      if (error) return alert("Failed to upload event image: " + error.message);
+
+      // Use the file ID from the uploaded file
+      image_id = data.id;
+    }
+
     const eventData = {
       title: eventForm.title,
       description: eventForm.description,
@@ -175,7 +208,9 @@ const AdminPanel = () => {
       location: eventForm.location,
       waiver_required: eventForm.waiver_required,
       waiver_url: eventForm.waiver_required ? waiver_url : "",
+      image_id,
     };
+
     if (eventId) {
       const { data, error } = await supabase
         .from("events")
@@ -269,23 +304,49 @@ const AdminPanel = () => {
     },
   );
 
-  const deletePastEventImages = useDeletePastEventImages(
-    "events",
-    () => events || [],
-    (event) => (event.image_id ? `images/${event.image_id}` : null),
-  );
+  // const deletePastEventImages = useDeletePastEventImages(
+  //   () =>
+  //     events
+  //       .filter((event) => new Date(event.date) < new Date() && event.image_id)
+  //       .map((event) => {
+  //         const imageId = event.image_id;
+  //         if (!imageId) {
+  //           return {
+  //             ...event,
+  //             image: null,
+  //             imageUrl: null,
+  //           };
+  //         }
+
+  //         const image = imageMap.get(imageId) || null;
+  //         const imageUrl = image
+  //           ? supabase.storage.from("events/images").getPublicUrl(image.name).data.publicUrl
+  //           : null;
+
+  //         return {
+  //           ...event,
+  //           image,
+  //           imageUrl,
+  //         };
+  //       }) || [],
+  //   (event) =>
+  //     event.imageUrl
+  //       ? event.imageUrl?.substring(`${supabaseUrl}/storage/v1/object/public/events/`.length)
+  //       : null,
+  // );
 
   useEffect(() => {
     if (events.length > 0) {
       deletePastEventPDFs().then(() => {
         // Optionally, you can refresh events here if needed
       });
-      deletePastEventImages();
+      // deletePastEventImages();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [events]);
 
-  if (loading) return <div className="text-center py-20 text-lg">Loading admin panel...</div>;
+  if (loading || authLoading)
+    return <div className="text-center py-20 text-lg">Loading admin panel...</div>;
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-12 space-y-10 mt-24">

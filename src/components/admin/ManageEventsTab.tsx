@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { supabase } from "~/lib/supabaseClient";
+import { supabase } from "~/lib/supabase";
 import { FaUser, FaEnvelope, FaPhone } from "react-icons/fa";
 import type { ManageEventsTabProps, Event, User } from "~/types";
 
@@ -53,6 +53,20 @@ const ManageEventsTab = ({ events, startEditEvent, deleteEvent }: ManageEventsTa
     if (window.confirm("Are you sure you want to delete this event?")) {
       deleteEvent(id);
     }
+  };
+
+  const [cleaning, setCleaning] = useState(false);
+
+  const clearOldData = async () => {
+    if (!window.confirm("Clean up expired event images?")) return;
+    setCleaning(true);
+    const { error } = await supabase.rpc("cleanup_expired_event_images_rpc");
+    if (error) {
+      alert("Failed to clean up: " + error.message);
+    } else {
+      alert("Successfully cleaned up expired event images!");
+    }
+    setCleaning(false);
   };
 
   const fetchSignedUpUsers = async (eventId: string) => {
@@ -334,6 +348,17 @@ const ManageEventsTab = ({ events, startEditEvent, deleteEvent }: ManageEventsTa
           </div>
         </div>
       )}
+      <div className="w-full flex justify-center mt-4">
+        <button
+          onClick={clearOldData}
+          disabled={cleaning}
+          className="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-full text-white font-semibold"
+          aria-label="Clean up old event images"
+          title="Clean up old event images"
+        >
+          {cleaning ? "Cleaning..." : "Clean Old Images"}
+        </button>
+      </div>
 
       {/* Volunteer Hours Modal */}
       {showHoursModal && hoursEvent && (

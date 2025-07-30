@@ -14,7 +14,7 @@ export type UserRole = Enums<"user_role">;
 export type ApprovalStatus = Enums<"approval_status">;
 
 // Export image
-export type EventWithImage = Event & { image: FileObject | null; imageUrl: string | null };
+export type EventWithImageUrl = Event & { image: FileObject | null; imageUrl: string | null };
 
 // Extended types for application use
 export interface VolunteerHoursWithEvent extends VolunteerHours {
@@ -92,7 +92,7 @@ export interface WebsiteDetailsTabProps {
 }
 
 export interface EventModalProps {
-  selectedEvent: EventWithImage;
+  selectedEvent: EventWithImageUrl;
   setShowEventModal: React.Dispatch<React.SetStateAction<boolean>>;
   formatDate: (dateStr: string) => string;
 }

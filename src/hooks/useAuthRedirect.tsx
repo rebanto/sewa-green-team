@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "~/context/auth/AuthContext";
-import { supabase } from "~/lib/supabaseClient";
+import { supabase } from "~/lib/supabase";
 
 export const useAuthRedirect = () => {
   const { user, session } = useAuth();

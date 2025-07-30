@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { supabase } from "~/lib/supabaseClient";
+import { supabase } from "~/lib/supabase";
 
 /**
  * Deletes PDFs for past events from the specified Supabase storage bucket.

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "~/lib/supabaseClient";
+import { supabase } from "~/lib/supabase";
 import { useAuth } from "~/context/auth/AuthContext";
 import {
   LineChart,
@@ -18,7 +18,7 @@ import type {
   VolunteerHoursWithEvent,
   GraphPeriod,
   ChartDataPoint,
-  EventWithImage,
+  EventWithImageUrl,
 } from "~/types";
 import { X, Calendar, Clock, MapPin, FileText } from "lucide-react";
 import type { EventModalProps } from "~/types";
@@ -27,10 +27,10 @@ const Dashboard = () => {
   const { user: authUser, signOut, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(true);
   const [userData, setUserData] = useState<User | null>(null);
-  const [events, setEvents] = useState<EventWithImage[]>([]);
+  const [events, setEvents] = useState<EventWithImageUrl[]>([]);
   const [userSignups, setUserSignups] = useState<Record<string, EventSignup>>({});
   const [signupLoading, setSignupLoading] = useState<string | null>(null);
-  const [selectedEvent, setSelectedEvent] = useState<EventWithImage | null>(null);
+  const [selectedEvent, setSelectedEvent] = useState<EventWithImageUrl | null>(null);
   const [showEventModal, setShowEventModal] = useState(false);
   const [volunteerHours, setVolunteerHours] = useState<VolunteerHoursWithEvent[]>([]);
   const [totalHours, setTotalHours] = useState(0);
@@ -119,7 +119,7 @@ const Dashboard = () => {
           };
         });
 
-        console.log("Events with images:", eventsWithImages);
+        // console.log("Events with images:", eventsWithImages);
         setEvents(eventsWithImages || []);
       } catch (error) {
         console.error("Error fetching events with images:", error);

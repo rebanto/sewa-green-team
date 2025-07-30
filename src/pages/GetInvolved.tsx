@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { supabase } from "~/lib/supabaseClient";
+import { supabase } from "~/lib/supabase";
 import { useAuth } from "~/context/auth/AuthContext";
 import type { UserRole } from "~/types";
 
