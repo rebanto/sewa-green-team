@@ -16,6 +16,14 @@ export type ApprovalStatus = Enums<"approval_status">;
 // Export image
 export type EventWithImageUrl = Event & { image: FileObject | null; imageUrl: string | null };
 
+// Type for the featured event data we actually fetch and use
+export interface FeaturedEvent {
+  id: string;
+  title: string;
+  description: string;
+  date: string;
+}
+
 // Extended types for application use
 export interface VolunteerHoursWithEvent extends VolunteerHours {
   event?: Event;

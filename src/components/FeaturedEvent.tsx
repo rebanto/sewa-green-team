@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { supabase } from "~/lib/supabase";
-import type { Event } from "~/types";
+import type { FeaturedEvent } from "~/types";
 
 const FeaturedEvent = () => {
-  const [event, setEvent] = useState<Event | null>(null);
+  const [event, setEvent] = useState<FeaturedEvent | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
