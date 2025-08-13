@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "~/lib/supabase";
 import type { FeaturedEvent } from "~/types";
 
-const FeaturedEvent = () => {
+const FeaturedEventCard = () => {
   const [event, setEvent] = useState<FeaturedEvent | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -82,4 +82,4 @@ const FeaturedEvent = () => {
   );
 };
 
-export default FeaturedEvent;
+export default FeaturedEventCard;
