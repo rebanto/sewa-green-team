@@ -54,6 +54,24 @@ export interface SignedUpUser {
   user: User | null;
 }
 
+export interface UserCardAction {
+  label: string;
+  onClick: () => void;
+  className: string;
+  ariaLabel: string;
+  title: string;
+}
+
+export interface UserCardProps {
+  user: UserWithStudentInfo;
+  isExpanded: boolean;
+  onToggleExpand: (id: string) => void;
+  actions?: UserCardAction[];
+  showStatus?: boolean;
+  showLeadId?: boolean;
+  className?: string;
+}
+
 // Legacy alias for WebsiteDetails (for backward compatibility)
 export type WebsiteStats = WebsiteDetails;
 

@@ -1,7 +1,6 @@
 import { motion } from "framer-motion";
 import FilterSelect from "~/components/ui/FilterSelect";
-import StatusBadge from "~/components/ui/StatusBadge";
-import ExpandableCard from "~/components/ui/ExpandableCard";
+import UserCard from "~/components/admin/UserCard";
 import CopyButton from "~/components/ui/CopyButton";
 import { cardVariants, containerVariants } from "~/constants/animations";
 import type { AllUsersTabProps } from "~/types";
@@ -75,52 +74,14 @@ const AllUsersTab = ({
           </motion.div>
         ) : (
           filterUsers(allUsers, userRoleFilter, userStatusFilter).map((user) => (
-            <ExpandableCard
+            <UserCard
               key={user.id}
-              id={user.id}
+              user={user}
               isExpanded={expandedUserId === user.id}
-              onToggle={toggleExpand}
-              expandedContent={
-                <div className="text-sm text-[#6b7547] space-y-2 font-medium">
-                  {user.role === "STUDENT" && (
-                    <>
-                      <p>
-                        <span className="font-semibold">Parent 1:</span> {user.parent_1_name} (
-                        {user.parent_1_email}, {user.parent_1_phone})
-                      </p>
-                      <p>
-                        <span className="font-semibold">Parent 2:</span> {user.parent_2_name} (
-                        {user.parent_2_email}, {user.parent_2_phone})
-                      </p>
-                    </>
-                  )}
-                  {user.role === "PARENT" && (
-                    <>
-                      <p>
-                        <span className="font-semibold">Student Email:</span> {user.student_email}
-                      </p>
-                      <p>
-                        <span className="font-semibold">Student Phone:</span> {user.student_phone}
-                      </p>
-                      <p>
-                        <span className="font-semibold">Student Name:</span> {user.student_name}
-                      </p>
-                    </>
-                  )}
-                </div>
-              }
-            >
-              <div className="font-extrabold text-xl text-[#6b7547] mb-2">{user.full_name}</div>
-              <div className="text-sm text-[#c27d50] space-y-1 font-medium">
-                <p>Email: {user.email}</p>
-                <p>Phone: {user.phone}</p>
-                <p>Role: {user.role}</p>
-                <p>
-                  Status: <StatusBadge status={user.status} />
-                </p>
-                <p>Lead ID: {user.lead_id}</p>
-              </div>
-            </ExpandableCard>
+              onToggleExpand={toggleExpand}
+              showStatus={true}
+              showLeadId={true}
+            />
           ))
         )}
       </motion.section>
