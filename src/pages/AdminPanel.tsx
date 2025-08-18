@@ -9,9 +9,10 @@ import ManageEventsTab from "~/components/admin/ManageEventsTab";
 import WebsiteDetailsTab from "~/components/admin/WebsiteDetailsTab";
 import { useDeletePastEventPDFs } from "~/hooks/useDeletePastEventPDFs";
 // import { useDeletePastEventImages } from "~/hooks/useDeletePastEventImages";
-import type { User, Event, EventFormData, UserWithStudentInfo } from "~/types";
+import type { User, UserWithStudentInfo, Event } from "~/types";
 // import type { FileObject } from "@supabase/storage-js";
 import { useAuth } from "../context/auth/AuthContext";
+import useEvents from "~/hooks/useEvents";
 
 const tabs = ["Pending Users", "All Users", "Create Event", "Manage Events", "Website Details"];
 
@@ -23,26 +24,33 @@ const AdminPanel = () => {
   const [activeTab, setActiveTab] = useState("Pending Users");
   const [pendingUsers, setPendingUsers] = useState<UserWithStudentInfo[]>([]);
   const [allUsers, setAllUsers] = useState<UserWithStudentInfo[]>([]);
-  const [events, setEvents] = useState<Event[]>([]);
+  const { events, deleteEvent, loading: eventLoading, error: eventError } = useEvents();
   const [expandedUserId, setExpandedUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  // const [imageMap, setImageMap] = useState<Map<string, FileObject>>(new Map());
   const [userRoleFilter, setUserRoleFilter] = useState("ALL");
   const [pendingRoleFilter, setPendingRoleFilter] = useState("ALL");
   const [userStatusFilter, setUserStatusFilter] = useState("ALL");
   const [pendingStatusFilter, setPendingStatusFilter] = useState("ALL");
-  const [eventForm, setEventForm] = useState<EventFormData>({
-    id: "", // for editing events
+  const [eventForm, setEventForm] = useState<Event>({
+    id: "",
+    created_at: null,
     title: "",
     description: "",
     date: "",
-    time: "", // new time field
+    time: null,
     location: "",
     waiver_required: false,
-    waiver_url: "",
+    waiver_id: null,
+    image_id: null,
+    image: null,
+    image_url: null,
+    waiver_url: null,
   });
 
   const navigate = useNavigate();
+
+  if (eventLoading) setLoading(true);
+  if (eventError) throw eventError;
 
   // Helper to format ISO datetime string to YYYY-MM-DD for input type=date
   const formatDateForInput = (isoDateStr: string) => {
@@ -68,26 +76,9 @@ const AdminPanel = () => {
       return navigate("/not-allowed");
     }
 
-    const [eventsResp, { data: usersResp }] = await Promise.all([
-      supabase.from("events").select("*").order("date", { ascending: true }),
+    const { data: usersResp } = await Promise.resolve(
       supabase.from("users").select("*").order("full_name", { ascending: true }),
-    ]);
-
-    // Fetch images from storage for imageMap
-    // try {
-    //   const { data: allImages, error: imageError } = await supabase.storage
-    //     .from("events")
-    //     .list("images", { limit: 1000 });
-
-    //   if (imageError) throw imageError;
-
-    // Create image map for efficient lookup
-    // const newImageMap = new Map(allImages.map((image) => [image.id, image]));
-    // setImageMap(newImageMap);
-    // } catch (error) {
-    // console.error("Error fetching images:", error);
-    // setImageMap(new Map());
-    // }
+    );
 
     // Split users into pending and all users
     const allUsers =
@@ -111,7 +102,6 @@ const AdminPanel = () => {
     );
 
     setPendingUsers(pendingResp || []);
-    setEvents(eventsResp.data || []);
     setAllUsers(usersResp || []);
     setLoading(false);
   }, [authLoading, user, navigate]);
@@ -166,7 +156,7 @@ const AdminPanel = () => {
     const now = new Date().toISOString().split("T")[0];
     if (eventId) {
       // Editing an existing event
-      const originalEvent = events.find((ev) => String(ev.id) === eventId);
+      const originalEvent = events?.find((ev) => String(ev.id) === eventId);
       if (originalEvent && originalEvent.date < now && formattedDate >= now) {
         alert("You cannot change a past event to a future date.");
         return;
@@ -226,37 +216,47 @@ const AdminPanel = () => {
     }
     setEventForm({
       id: "",
+      created_at: null,
       title: "",
       description: "",
       date: "",
-      time: "",
+      time: null,
       location: "",
       waiver_required: false,
-      waiver_url: "",
+      waiver_id: null,
+      image_id: null,
+      image: null,
+      image_url: null,
+      waiver_url: null,
     });
     await fetchData();
     setActiveTab("Manage Events");
   };
 
   // Delete event
-  const deleteEvent = async (id: string) => {
-    if (!window.confirm("Are you sure you want to delete this event?")) return;
-    const { error } = await supabase.from("events").delete().eq("id", id);
-    if (error) return alert(error.message);
-    setEvents((prev) => prev.filter((ev) => ev.id !== id));
+  const deleteEventWithMsg = async (id: string) => {
+    if (window.confirm("Are you sure you want to delete this event?") && deleteEvent) {
+      const { error } = await deleteEvent(id);
+      if (error) return alert(error.message);
+    }
   };
 
   // Populate event form for editing, with fixed date formatting
   const startEditEvent = (event: Event) => {
     setEventForm({
       id: event.id,
+      created_at: event.created_at ?? null,
       title: event.title,
       description: event.description,
       date: formatDateForInput(event.date),
-      time: event.time || "",
+      time: event.time ?? "",
       location: event.location,
       waiver_required: event.waiver_required,
-      waiver_url: event.waiver_url || "",
+      waiver_id: event.waiver_id ?? null,
+      image_id: event.image_id ?? null,
+      image: null,
+      image_url: event.image_url ?? null,
+      waiver_url: event.waiver_url ?? null,
     });
     setActiveTab("Create Event");
   };
@@ -304,39 +304,8 @@ const AdminPanel = () => {
     },
   );
 
-  // const deletePastEventImages = useDeletePastEventImages(
-  //   () =>
-  //     events
-  //       .filter((event) => new Date(event.date) < new Date() && event.image_id)
-  //       .map((event) => {
-  //         const imageId = event.image_id;
-  //         if (!imageId) {
-  //           return {
-  //             ...event,
-  //             image: null,
-  //             imageUrl: null,
-  //           };
-  //         }
-
-  //         const image = imageMap.get(imageId) || null;
-  //         const imageUrl = image
-  //           ? supabase.storage.from("events/images").getPublicUrl(image.name).data.publicUrl
-  //           : null;
-
-  //         return {
-  //           ...event,
-  //           image,
-  //           imageUrl,
-  //         };
-  //       }) || [],
-  //   (event) =>
-  //     event.imageUrl
-  //       ? event.imageUrl?.substring(`${supabaseUrl}/storage/v1/object/public/events/`.length)
-  //       : null,
-  // );
-
   useEffect(() => {
-    if (events.length > 0) {
+    if (events && events.length > 0) {
       deletePastEventPDFs().then(() => {
         // Optionally, you can refresh events here if needed
       });
@@ -416,9 +385,9 @@ const AdminPanel = () => {
         )}
         {activeTab === "Manage Events" && (
           <ManageEventsTab
-            events={events}
+            events={events!}
             startEditEvent={startEditEvent}
-            deleteEvent={deleteEvent}
+            deleteEvent={deleteEventWithMsg}
           />
         )}
         {activeTab === "Website Details" && <WebsiteDetailsTab />}

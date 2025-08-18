@@ -1,10 +1,10 @@
 import React from "react";
 import type { FileObject } from "@supabase/storage-js";
-import type { Tables, Enums } from "@/supabase.types";
+import type { Enums, Tables } from "@/supabase.types";
 
 // Re-export Supabase types with more convenient names
 export type User = Tables<"users">;
-export type Event = Tables<"events">;
+export type _RawTableEvent = Tables<"events">;
 export type EventSignup = Tables<"event_signups">;
 export type VolunteerHours = Tables<"volunteer_hours">;
 export type WebsiteDetails = Tables<"website_details">;
@@ -14,7 +14,11 @@ export type UserRole = Enums<"user_role">;
 export type ApprovalStatus = Enums<"approval_status">;
 
 // Export image
-export type EventWithImageUrl = Event & { image: FileObject | null; imageUrl: string | null };
+export type Event = _RawTableEvent & {
+  image: FileObject | null;
+  image_url: string | null;
+  waiver_url: string | null;
+};
 
 // Type for the featured event data we actually fetch and use
 export interface FeaturedEvent {
@@ -55,11 +59,15 @@ export interface AllUsersTabProps {
   setUserStatusFilter: (filter: string) => void;
   roles: string[];
   statusOptions: string[];
-  filterUsers: (users: UserWithStudentInfo[], roleFilter: string, statusFilter: string) => UserWithStudentInfo[];
+  filterUsers: (
+    users: UserWithStudentInfo[],
+    roleFilter: string,
+    statusFilter: string,
+  ) => UserWithStudentInfo[];
   expandedUserId: string | null;
   toggleExpand: (id: string) => void;
   copyToClipboard: (text: string) => void;
-  generateBulkList: (type: 'email' | 'phone') => string;
+  generateBulkList: (type: "email" | "phone") => string;
 }
 
 export interface PendingUsersTabProps {
@@ -70,16 +78,29 @@ export interface PendingUsersTabProps {
   setPendingStatusFilter: (filter: string) => void;
   roles: string[];
   statusOptions: string[];
-  filterUsers: (users: UserWithStudentInfo[], roleFilter: string, statusFilter: string) => UserWithStudentInfo[];
+  filterUsers: (
+    users: UserWithStudentInfo[],
+    roleFilter: string,
+    statusFilter: string,
+  ) => UserWithStudentInfo[];
   expandedUserId: string | null;
   toggleExpand: (id: string) => void;
-  updateUserStatus: (id: string, status: 'APPROVED' | 'REJECTED') => Promise<void>;
+  updateUserStatus: (
+    id: string,
+    status: "APPROVED" | "REJECTED",
+  ) => Promise<void>;
 }
 
 export interface CreateEventTabProps {
   eventForm: EventFormData;
-  handleEventChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
-  saveEvent: (e: React.FormEvent, waiverFile?: File, imageFile?: File) => Promise<void>;
+  handleEventChange: (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => void;
+  saveEvent: (
+    e: React.FormEvent,
+    waiverFile?: File,
+    imageFile?: File,
+  ) => Promise<void>;
   setEventForm: (form: EventFormData) => void;
 }
 
@@ -100,7 +121,7 @@ export interface WebsiteDetailsTabProps {
 }
 
 export interface EventModalProps {
-  selectedEvent: EventWithImageUrl;
+  selectedEvent: Event;
   setShowEventModal: React.Dispatch<React.SetStateAction<boolean>>;
   formatDate: (dateStr: string) => string;
 }
@@ -142,7 +163,7 @@ export interface UserFormData {
 
 // Utility types
 export type UserStatus = ApprovalStatus;
-export type GraphPeriod = 'week' | 'month' | 'year';
+export type GraphPeriod = "week" | "month" | "year";
 
 // Chart data types
 export interface ChartDataPoint {
