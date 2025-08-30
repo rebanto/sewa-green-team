@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "~/lib/supabase";
 import { useAuth } from "~/context/auth/AuthContext";
@@ -18,19 +18,20 @@ import type {
   VolunteerHoursWithEvent,
   GraphPeriod,
   ChartDataPoint,
-  EventWithImageUrl,
+  Event,
 } from "~/types";
 import { X, Calendar, Clock, MapPin, FileText } from "lucide-react";
 import type { EventModalProps } from "~/types";
+import useEvents from "~/hooks/useEvents";
 
 const Dashboard = () => {
   const { user: authUser, signOut, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(true);
   const [userData, setUserData] = useState<User | null>(null);
-  const [events, setEvents] = useState<EventWithImageUrl[]>([]);
+  const { events, loading: eventLoading, error: eventError } = useEvents();
   const [userSignups, setUserSignups] = useState<Record<string, EventSignup>>({});
   const [signupLoading, setSignupLoading] = useState<string | null>(null);
-  const [selectedEvent, setSelectedEvent] = useState<EventWithImageUrl | null>(null);
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [showEventModal, setShowEventModal] = useState(false);
   const [volunteerHours, setVolunteerHours] = useState<VolunteerHoursWithEvent[]>([]);
   const [totalHours, setTotalHours] = useState(0);
@@ -38,6 +39,21 @@ const Dashboard = () => {
   const [graphData, setGraphData] = useState<ChartDataPoint[]>([]);
 
   const navigate = useNavigate();
+  const navigateRef = useRef(navigate);
+  navigateRef.current = navigate;
+
+  // Handle event loading and error states in useEffect to prevent infinite re-renders
+  useEffect(() => {
+    if (eventLoading) {
+      setLoading(true);
+    }
+  }, [eventLoading]);
+
+  useEffect(() => {
+    if (eventError) {
+      throw eventError;
+    }
+  }, [eventError]);
 
   const formatDate = (dateStr: string) => {
     if (!dateStr) return "No date";
@@ -49,10 +65,10 @@ const Dashboard = () => {
     }).format(date);
   };
 
-  const handleLogout = async () => {
+  const handleLogout = useCallback(async () => {
     navigate("/");
     await signOut();
-  };
+  }, [navigate, signOut]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -68,63 +84,15 @@ const Dashboard = () => {
         .eq("id", authUser.id)
         .single();
 
-      if (userError || !userInfo) return navigate("/get-involved?login=true");
-      if (userInfo.status !== "APPROVED") return navigate("/not-approved");
-      setUserData(userInfo as User);
-
-      // Get all files once to avoid repeated API calls
-      try {
-        // Get all events
-        const { data: eventData, error: eventError } = await supabase
-          .from("events")
-          .select("*")
-          .order("date", { ascending: true });
-
-        if (eventError) throw eventError;
-
-        if (!eventData || eventData.length === 0) {
-          setEvents([]);
-          return;
-        }
-
-        // Get all images from storage
-        const { data: allImages, error: imageError } = await supabase.storage
-          .from("events")
-          .list("images", { limit: 1000 });
-
-        if (imageError) throw imageError;
-
-        // Create image map for efficient lookup
-        const imageMap = new Map(allImages.map((image) => [image.id, image]));
-
-        // Merge events with their corresponding images
-        const eventsWithImages = eventData.map((event) => {
-          if (!event.image_id || !imageMap.has(event.image_id)) {
-            return {
-              ...event,
-              image: null,
-              imageUrl: null,
-            };
-          }
-
-          const image = imageMap.get(event.image_id) || null;
-          const {
-            data: { publicUrl },
-          } = supabase.storage.from("events/images").getPublicUrl(image!.name);
-
-          return {
-            ...event,
-            image,
-            imageUrl: publicUrl,
-          };
-        });
-
-        // console.log("Events with images:", eventsWithImages);
-        setEvents(eventsWithImages || []);
-      } catch (error) {
-        console.error("Error fetching events with images:", error);
-        setEvents([]);
+      if (userError || !userInfo) {
+        console.error("User data fetch failed:", userError);
+        return;
       }
+      if (userInfo.status !== "APPROVED") {
+        console.error("User not approved");
+        return;
+      }
+      setUserData(userInfo as User);
 
       const { data: signups } = await supabase
         .from("event_signups")
@@ -155,7 +123,7 @@ const Dashboard = () => {
       setLoading(false);
     };
     fetchData();
-  }, [authUser, authLoading, navigate]);
+  }, [authUser, authLoading]);
 
   // Update graph when period or data changes
   useEffect(() => {
@@ -236,10 +204,10 @@ const Dashboard = () => {
   };
 
   const todayStr = new Date().toISOString().split("T")[0];
-  const upcomingEvents = events.filter((ev) => ev.date >= todayStr);
-  const pastEvents = events.filter((ev) => ev.date < todayStr);
+  const upcomingEvents = events?.filter((ev) => ev.date >= todayStr);
+  const pastEvents = events?.filter((ev) => ev.date < todayStr);
 
-  if (loading)
+  if (loading || authLoading || !authUser)
     return <div className="py-32 text-center text-xl text-[#4d5640]">Loading dashboard...</div>;
 
   return (
@@ -327,7 +295,7 @@ const Dashboard = () => {
           <div className="bg-white rounded-3xl p-8 shadow-lg border border-[#b8c19a]">
             <h2 className="text-2xl font-bold text-[#49682d] mb-6">Upcoming Events</h2>
             <ul className="space-y-4">
-              {upcomingEvents.map((event) => {
+              {upcomingEvents?.map((event) => {
                 const signedUp = !!userSignups[event.id];
 
                 return (
@@ -341,7 +309,7 @@ const Dashboard = () => {
                         {formatDate(event.date)} {event.time && `at ${event.time}`}
                       </p>
                       <p className="text-sm text-[#6b7f46]">{event.location}</p>
-                      {event.waiver_required && event.waiver_url && event.date >= todayStr && (
+                      {event.waiver_required && event.waiver_id && event.date >= todayStr && (
                         <>
                           <p className="text-xs mt-1 px-3 py-1 bg-red-100 text-red-700 rounded-full font-semibold w-fit">
                             Waiver Required
@@ -349,7 +317,7 @@ const Dashboard = () => {
                           <p className="text-xs mt-1 text-red-700 font-semibold">
                             This event requires a signed waiver.{" "}
                             <a
-                              href={event.waiver_url}
+                              href={event.waiver_id}
                               download
                               className="underline text-blue-700"
                               aria-label={`Download waiver PDF for ${event.title}`}
@@ -408,7 +376,7 @@ const Dashboard = () => {
           <div className="bg-white rounded-3xl p-6 shadow-xl border border-[#b8c19a]">
             <h2 className="text-xl font-semibold text-[#49682d] mb-3">Past Events</h2>
             <ul className="text-[#73814f] space-y-1">
-              {pastEvents.map((ev) => (
+              {pastEvents?.map((ev) => (
                 <li key={ev.id} className="text-sm font-medium">
                   {ev.title} — {formatDate(ev.date)} {ev.time ? `at ${ev.time}` : ""}
                 </li>
@@ -499,7 +467,7 @@ const EventModal = ({ selectedEvent, setShowEventModal, formatDate }: EventModal
           {selectedEvent.image && (
             <div className="relative w-full h-64 rounded-xl overflow-hidden shadow-lg">
               <img
-                src={selectedEvent.imageUrl || ""}
+                src={selectedEvent.image_url || ""}
                 alt={selectedEvent.title}
                 className="w-full h-full object-cover"
               />
@@ -542,7 +510,7 @@ const EventModal = ({ selectedEvent, setShowEventModal, formatDate }: EventModal
                   Waiver Required: {selectedEvent.waiver_required ? "Yes" : "No"}
                 </p>
 
-                {selectedEvent.waiver_required && selectedEvent.waiver_url && isUpcomingEvent && (
+                {selectedEvent.waiver_required && selectedEvent.waiver_id && isUpcomingEvent && (
                   <div className="mt-2 p-3 bg-red-50 rounded-lg border border-red-200">
                     <p className="text-sm text-red-800 font-medium mb-2">⚠️ Waiver Required</p>
                     <p className="text-sm text-red-700 mb-2">
@@ -550,7 +518,7 @@ const EventModal = ({ selectedEvent, setShowEventModal, formatDate }: EventModal
                       with you.
                     </p>
                     <a
-                      href={selectedEvent.waiver_url}
+                      href={`https://mkrvorkertmhgtsnougw.supabase.co/storage/v1/object/public/events/waivers/${selectedEvent.waiver_id}`}
                       download
                       className="inline-flex items-center gap-1 text-sm font-medium text-blue-700 hover:text-blue-800 underline"
                     >

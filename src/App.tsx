@@ -11,7 +11,6 @@ import Dashboard from "~/pages/Dashboard";
 import NotApproved from "~/pages/NotApproved";
 import AdminPanel from "~/pages/AdminPanel";
 import NotAllowed from "~/pages/NotAllowed";
-import { useAuthRedirect } from "~/hooks/useAuthRedirect";
 import { NavbarProvider } from "~/context/navbar/NavbarProvider";
 import { AuthProvider } from "~/context/auth/AuthProvider";
 
@@ -19,7 +18,6 @@ function App() {
   return (
     <Router>
       <AuthProvider>
-        <AuthRedirector />
         <NavbarProvider>
           <div className="flex flex-col min-h-screen">
             <Navbar />
@@ -43,11 +41,6 @@ function App() {
       </AuthProvider>
     </Router>
   );
-}
-
-function AuthRedirector() {
-  useAuthRedirect();
-  return null;
 }
 
 export default App;
