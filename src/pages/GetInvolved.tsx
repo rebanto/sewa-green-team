@@ -467,12 +467,6 @@ const GetInvolved = () => {
             </>
           )}
 
-          <div className="w-full flex items-center my-6">
-            <div className="flex-grow h-px bg-[#cdd1bc]" />
-            <span className="mx-4 text-[#6e8b15] font-semibold">Account</span>
-            <div className="flex-grow h-px bg-[#cdd1bc]" />
-          </div>
-
           <label className="block font-medium mb-1" htmlFor="email">
             Email Address <span className="text-red-500">*</span>
           </label>
