@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "~/lib/supabase";
 import { useAuth } from "~/context/auth/AuthContext";
@@ -39,9 +39,21 @@ const Dashboard = () => {
   const [graphData, setGraphData] = useState<ChartDataPoint[]>([]);
 
   const navigate = useNavigate();
+  const navigateRef = useRef(navigate);
+  navigateRef.current = navigate;
 
-  if (eventLoading) setLoading(true);
-  if (eventError) throw eventError;
+  // Handle event loading and error states in useEffect to prevent infinite re-renders
+  useEffect(() => {
+    if (eventLoading) {
+      setLoading(true);
+    }
+  }, [eventLoading]);
+
+  useEffect(() => {
+    if (eventError) {
+      throw eventError;
+    }
+  }, [eventError]);
 
   const formatDate = (dateStr: string) => {
     if (!dateStr) return "No date";
@@ -53,10 +65,10 @@ const Dashboard = () => {
     }).format(date);
   };
 
-  const handleLogout = async () => {
+  const handleLogout = useCallback(async () => {
     navigate("/");
     await signOut();
-  };
+  }, [navigate, signOut]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -72,8 +84,14 @@ const Dashboard = () => {
         .eq("id", authUser.id)
         .single();
 
-      if (userError || !userInfo) return navigate("/get-involved?login=true");
-      if (userInfo.status !== "APPROVED") return navigate("/not-approved");
+      if (userError || !userInfo) {
+        console.error("User data fetch failed:", userError);
+        return;
+      }
+      if (userInfo.status !== "APPROVED") {
+        console.error("User not approved");
+        return;
+      }
       setUserData(userInfo as User);
 
       const { data: signups } = await supabase
@@ -105,7 +123,7 @@ const Dashboard = () => {
       setLoading(false);
     };
     fetchData();
-  }, [authUser, authLoading, navigate]);
+  }, [authUser, authLoading]);
 
   // Update graph when period or data changes
   useEffect(() => {
@@ -189,7 +207,7 @@ const Dashboard = () => {
   const upcomingEvents = events?.filter((ev) => ev.date >= todayStr);
   const pastEvents = events?.filter((ev) => ev.date < todayStr);
 
-  if (loading && authLoading)
+  if (loading || authLoading || !authUser)
     return <div className="py-32 text-center text-xl text-[#4d5640]">Loading dashboard...</div>;
 
   return (
@@ -277,7 +295,7 @@ const Dashboard = () => {
           <div className="bg-white rounded-3xl p-8 shadow-lg border border-[#b8c19a]">
             <h2 className="text-2xl font-bold text-[#49682d] mb-6">Upcoming Events</h2>
             <ul className="space-y-4">
-              {upcomingEvents.map((event) => {
+              {upcomingEvents?.map((event) => {
                 const signedUp = !!userSignups[event.id];
 
                 return (
@@ -358,7 +376,7 @@ const Dashboard = () => {
           <div className="bg-white rounded-3xl p-6 shadow-xl border border-[#b8c19a]">
             <h2 className="text-xl font-semibold text-[#49682d] mb-3">Past Events</h2>
             <ul className="text-[#73814f] space-y-1">
-              {pastEvents.map((ev) => (
+              {pastEvents?.map((ev) => (
                 <li key={ev.id} className="text-sm font-medium">
                   {ev.title} — {formatDate(ev.date)} {ev.time ? `at ${ev.time}` : ""}
                 </li>

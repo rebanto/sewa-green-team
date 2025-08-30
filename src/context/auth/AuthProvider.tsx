@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState, useRef, useMemo, type ReactNode } from "react";
 import { supabase } from "~/lib/supabase";
 import { type User, type Session } from "@supabase/supabase-js";
 import { AuthContext } from "./AuthContext";
@@ -9,9 +9,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [justSignedOut, setJustSignedOut] = useState(false);
+  const [authCheckInProgress, setAuthCheckInProgress] = useState(false);
 
   const navigate = useNavigate();
   const location = useLocation();
+  const navigateRef = useRef(navigate);
+  navigateRef.current = navigate;
+  const lastAuthCheckRef = useRef(0);
 
   useEffect(() => {
     // Initialize session & user
@@ -34,29 +38,61 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => listener.subscription.unsubscribe();
   }, []);
 
-  const protectedRoutes = ["/dashboard", "/admin"];
   const { pathname } = location;
+  const protectedRoutes = useMemo(() => ["/dashboard", "/admin"], []);
 
-  if (session && protectedRoutes.includes(pathname)) {
-    (async () => {
-      if (!user) {
-        return pathname !== "/not-allowed" && navigate("/not-allowed");
-      }
+  // Use useEffect to handle auth checks properly
+  useEffect(() => {
+    if (!session || !protectedRoutes.includes(pathname)) return;
+    if (authCheckInProgress) return; // Prevent multiple simultaneous auth checks
 
-      // Fetch user's status from DB
-      const { data: userRecord, error } = await fetchStatus(user.id);
-      if (error || !userRecord) {
-        console.error("User lookup failed:", error?.message);
-        return pathname !== "/not-allowed" && navigate("/not-allowed");
-      }
+    // Debounce rapid auth checks (prevent checking more than once per 500ms)
+    const now = Date.now();
+    if (now - lastAuthCheckRef.current < 500) return;
+    lastAuthCheckRef.current = now;
 
-      if (userRecord.status === "APPROVED") {
-        if (pathname === "/not-approved") navigate("/dashboard");
-      } else {
-        if (pathname !== "/not-approved") navigate("/not-approved");
+    const checkAuth = async () => {
+      setAuthCheckInProgress(true);
+
+      try {
+        if (!user) {
+          console.error("Navigated by AuthProvider - no user");
+          if (pathname !== "/not-allowed") {
+            navigateRef.current("/not-allowed");
+          }
+          return;
+        }
+
+        // Fetch user's status from DB
+        const { data: userRecord, error } = await fetchStatus(user.id);
+
+        if (error || !userRecord) {
+          console.error("User lookup failed:", error?.message);
+          if (pathname !== "/not-allowed") {
+            navigateRef.current("/not-allowed");
+          }
+          return;
+        }
+
+        if (userRecord.status === "APPROVED") {
+          if (pathname === "/not-approved") {
+            navigateRef.current("/dashboard");
+          }
+        } else {
+          if (pathname !== "/not-approved") {
+            navigateRef.current("/not-approved");
+          }
+        }
+      } catch (error) {
+        console.error("Auth check error:", error);
+        // Don't redirect on network errors, let the user retry
+      } finally {
+        setAuthCheckInProgress(false);
       }
-    })();
-  }
+    };
+
+    checkAuth();
+  }, [session, user, pathname, protectedRoutes, authCheckInProgress]);
 
   const signIn = async (email: string, password: string) => {
     setLoading(true);

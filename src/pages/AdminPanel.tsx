@@ -49,8 +49,18 @@ const AdminPanel = () => {
 
   const navigate = useNavigate();
 
-  if (eventLoading) setLoading(true);
-  if (eventError) throw eventError;
+  // Handle event loading and error states in useEffect to prevent infinite re-renders
+  useEffect(() => {
+    if (eventLoading) {
+      setLoading(true);
+    }
+  }, [eventLoading]);
+
+  useEffect(() => {
+    if (eventError) {
+      throw eventError;
+    }
+  }, [eventError]);
 
   // Helper to format ISO datetime string to YYYY-MM-DD for input type=date
   const formatDateForInput = (isoDateStr: string) => {
@@ -73,7 +83,8 @@ const AdminPanel = () => {
       .single();
 
     if (!currentUser || currentUser.role !== "ADMIN" || currentUser.status !== "APPROVED") {
-      return navigate("/not-allowed");
+      console.error("Admin access denied:", currentUser);
+      return;
     }
 
     const { data: usersResp } = await Promise.resolve(
@@ -314,7 +325,7 @@ const AdminPanel = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [events]);
 
-  if (loading || authLoading)
+  if (loading || authLoading || !user)
     return <div className="text-center py-20 text-lg">Loading admin panel...</div>;
 
   return (

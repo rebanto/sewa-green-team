@@ -92,7 +92,7 @@ export interface PendingUsersTabProps {
 }
 
 export interface CreateEventTabProps {
-  eventForm: EventFormData;
+  eventForm: Event;
   handleEventChange: (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => void;
@@ -101,7 +101,7 @@ export interface CreateEventTabProps {
     waiverFile?: File,
     imageFile?: File,
   ) => Promise<void>;
-  setEventForm: (form: EventFormData) => void;
+  setEventForm: (form: Event) => void;
 }
 
 export interface ManageEventsTabProps {
@@ -124,19 +124,6 @@ export interface EventModalProps {
   selectedEvent: Event;
   setShowEventModal: React.Dispatch<React.SetStateAction<boolean>>;
   formatDate: (dateStr: string) => string;
-}
-
-// Form data types
-export interface EventFormData {
-  id: string;
-  title: string;
-  description: string;
-  date: string;
-  time: string;
-  location: string;
-  waiver_required: boolean;
-  waiver_url: string;
-  image_id?: string;
 }
 
 export interface UserFormData {

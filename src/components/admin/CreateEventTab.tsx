@@ -108,7 +108,7 @@ const CreateEventTab = ({
             id="event-time"
             type="time"
             name="time"
-            value={eventForm.time}
+            value={eventForm.time || ""}
             onChange={handleEventChange}
             required
             className="formInput"
@@ -211,8 +211,12 @@ const CreateEventTab = ({
                 time: "",
                 location: "",
                 waiver_required: false,
-                waiver_url: "",
+                waiver_url: null,
                 image_id: "",
+                created_at: null,
+                waiver_id: null,
+                image: null,
+                image_url: null,
               })
             }
             className="ml-4 bg-gray-300 hover:bg-gray-400 rounded-full px-6 py-2"
