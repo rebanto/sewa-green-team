@@ -1,5 +1,4 @@
 import { useEffect, useState, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
 import { supabase } from "~/lib/supabase";
 import clsx from "clsx";
 import PendingUsersTab from "~/components/admin/PendingUsersTab";
@@ -24,7 +23,13 @@ const AdminPanel = () => {
   const [activeTab, setActiveTab] = useState("Pending Users");
   const [pendingUsers, setPendingUsers] = useState<UserWithStudentInfo[]>([]);
   const [allUsers, setAllUsers] = useState<UserWithStudentInfo[]>([]);
-  const { events, deleteEvent, loading: eventLoading, error: eventError } = useEvents();
+  const {
+    events,
+    deleteEvent,
+    refreshEvents,
+    loading: eventLoading,
+    error: eventError,
+  } = useEvents();
   const [expandedUserId, setExpandedUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [userRoleFilter, setUserRoleFilter] = useState("ALL");
@@ -46,8 +51,6 @@ const AdminPanel = () => {
     image_url: null,
     waiver_url: null,
   });
-
-  const navigate = useNavigate();
 
   // Handle event loading and error states in useEffect to prevent infinite re-renders
   useEffect(() => {
@@ -115,7 +118,7 @@ const AdminPanel = () => {
     setPendingUsers(pendingResp || []);
     setAllUsers(usersResp || []);
     setLoading(false);
-  }, [authLoading, user, navigate]);
+  }, [authLoading, user]);
 
   useEffect(() => {
     fetchData();
@@ -180,12 +183,14 @@ const AdminPanel = () => {
     if (eventForm.waiver_required && waiverFile) {
       // Upload to Supabase Storage
       const fileName = `${Date.now()}_${waiverFile.name}`;
-      const { error } = await supabase.storage
+      const { data: uploadData, error } = await supabase.storage
         .from("waivers")
         .upload(fileName, waiverFile, { upsert: true });
       if (error) return alert("Failed to upload waiver PDF: " + error.message);
-      const { data: publicUrlData } = supabase.storage.from("waivers").getPublicUrl(fileName);
-      waiver_url = publicUrlData.publicUrl;
+
+      // Store the file ID in waiver_id for database
+      const waiver_id = uploadData?.id || fileName;
+      waiver_url = waiver_id; // This will be used to construct the URL later
     }
 
     if (imageFile) {
@@ -208,11 +213,11 @@ const AdminPanel = () => {
       time: eventForm.time,
       location: eventForm.location,
       waiver_required: eventForm.waiver_required,
-      waiver_url: eventForm.waiver_required ? waiver_url : "",
-      image_id,
+      image_id: image_id || null, // Convert empty string to null for database
+      waiver_id: eventForm.waiver_required && waiver_url ? waiver_url : null, // Store file ID in waiver_id
     };
 
-    if (eventId) {
+    if (eventId && eventId !== "") {
       const { data, error } = await supabase
         .from("events")
         .update(eventData)
@@ -225,6 +230,7 @@ const AdminPanel = () => {
       const { error } = await supabase.from("events").insert(eventData);
       if (error) return alert(error.message);
     }
+
     setEventForm({
       id: "",
       created_at: null,
@@ -241,6 +247,9 @@ const AdminPanel = () => {
       waiver_url: null,
     });
     await fetchData();
+    if (refreshEvents) {
+      await refreshEvents(false); // Refresh events data without showing loading
+    }
     setActiveTab("Manage Events");
   };
 
