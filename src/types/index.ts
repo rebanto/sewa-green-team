@@ -40,6 +40,39 @@ export interface Leader {
   image_url: string;
 }
 
+export interface HoursUser {
+  id: string;
+  full_name: string;
+  email: string;
+}
+
+export interface SignedUpUser {
+  id: string;
+  status: string | null;
+  user_id: string | null;
+  event_id: string | null;
+  created_at: string | null;
+  user: User | null;
+}
+
+export interface UserCardAction {
+  label: string;
+  onClick: () => void;
+  className: string;
+  ariaLabel: string;
+  title: string;
+}
+
+export interface UserCardProps {
+  user: UserWithStudentInfo;
+  isExpanded: boolean;
+  onToggleExpand: (id: string) => void;
+  actions?: UserCardAction[];
+  showStatus?: boolean;
+  showLeadId?: boolean;
+  className?: string;
+}
+
 // Legacy alias for WebsiteDetails (for backward compatibility)
 export type WebsiteStats = WebsiteDetails;
 
