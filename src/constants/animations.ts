@@ -9,6 +9,11 @@ export const containerVariants = {
   visible: { transition: { staggerChildren: 0.1 } },
 };
 
+export const staggerContainer = {
+  show: { transition: { staggerChildren: 0.1 } },
+  hidden: {},
+};
+
 export const fadeUp = {
   hidden: { opacity: 0, y: 30 },
   show: {

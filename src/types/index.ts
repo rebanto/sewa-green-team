@@ -4,7 +4,7 @@ import type { Enums, Tables } from "@/supabase.types";
 
 // Re-export Supabase types with more convenient names
 export type User = Tables<"users">;
-export type Event = Tables<"events">;
+export type _RawTableEvent = Tables<"events">;
 export type EventSignup = Tables<"event_signups">;
 export type VolunteerHours = Tables<"volunteer_hours">;
 export type WebsiteDetails = Tables<"website_details">;
@@ -14,9 +14,10 @@ export type UserRole = Enums<"user_role">;
 export type ApprovalStatus = Enums<"approval_status">;
 
 // Export image
-export type EventWithImageUrl = Event & {
+export type Event = _RawTableEvent & {
   image: FileObject | null;
-  imageUrl: string | null;
+  image_url: string | null;
+  waiver_url: string | null;
 };
 
 // Type for the featured event data we actually fetch and use
@@ -124,7 +125,7 @@ export interface PendingUsersTabProps {
 }
 
 export interface CreateEventTabProps {
-  eventForm: EventFormData;
+  eventForm: Event;
   handleEventChange: (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => void;
@@ -133,7 +134,7 @@ export interface CreateEventTabProps {
     waiverFile?: File,
     imageFile?: File,
   ) => Promise<void>;
-  setEventForm: (form: EventFormData) => void;
+  setEventForm: (form: Event) => void;
 }
 
 export interface ManageEventsTabProps {
@@ -152,26 +153,10 @@ export interface WebsiteDetailsTabProps {
   handleFeaturedEventSave: () => Promise<void>;
 }
 
-export interface VolunteerHoursModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  event: Event | null;
-  users: HoursUser[];
-  onSave: (hoursData: { [userId: string]: number }) => Promise<void>;
-  isLoading?: boolean;
-}
-
-// Form data types
-export interface EventFormData {
-  id: string;
-  title: string;
-  description: string;
-  date: string;
-  time: string;
-  location: string;
-  waiver_required: boolean;
-  waiver_url: string;
-  image_id?: string;
+export interface EventModalProps {
+  selectedEvent: Event;
+  setShowEventModal: React.Dispatch<React.SetStateAction<boolean>>;
+  formatDate: (dateStr: string) => string;
 }
 
 export interface UserFormData {

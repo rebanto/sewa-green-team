@@ -134,7 +134,7 @@ const CreateEventTab = ({
                 id="event-time"
                 type="time"
                 name="time"
-                value={eventForm.time}
+                value={eventForm.time || ""}
                 onChange={handleEventChange}
                 required
                 className="w-full p-4 rounded-xl border border-[#cdd1bc] focus:ring-2 focus:ring-[#8a9663] transition duration-300 bg-white/80 backdrop-blur-sm shadow-sm hover:shadow-md text-[#6b7547] font-medium"
@@ -233,14 +233,18 @@ const CreateEventTab = ({
                 onClick={() =>
                   setEventForm({
                     id: "",
+                    created_at: null,
                     title: "",
                     description: "",
                     date: "",
-                    time: "",
+                    time: null,
                     location: "",
                     waiver_required: false,
-                    waiver_url: "",
-                    image_id: "",
+                    waiver_id: null,
+                    image_id: null,
+                    image: null,
+                    image_url: null,
+                    waiver_url: null,
                   })
                 }
                 className="bg-gradient-to-r from-[#f4f3ec] to-[#e6e8d5] text-[#6b7547] border border-[#cdd1bc] hover:bg-gradient-to-r hover:from-[#e6e8d5] hover:to-[#d4d8c1] rounded-full px-8 py-3 font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"

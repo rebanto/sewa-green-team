@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.3 (519615d)"
@@ -44,6 +44,20 @@ export type Database = {
             foreignKeyName: "event_signups_event_id_fkey"
             columns: ["event_id"]
             isOneToOne: false
+            referencedRelation: "event_images"
+            referencedColumns: ["event_id"]
+          },
+          {
+            foreignKeyName: "event_signups_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "event_waivers"
+            referencedColumns: ["event_id"]
+          },
+          {
+            foreignKeyName: "event_signups_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
             referencedRelation: "events"
             referencedColumns: ["id"]
           },
@@ -66,8 +80,8 @@ export type Database = {
           location: string
           time: string | null
           title: string
+          waiver_id: string | null
           waiver_required: boolean
-          waiver_url: string | null
         }
         Insert: {
           created_at?: string | null
@@ -78,8 +92,8 @@ export type Database = {
           location: string
           time?: string | null
           title: string
+          waiver_id?: string | null
           waiver_required?: boolean
-          waiver_url?: string | null
         }
         Update: {
           created_at?: string | null
@@ -90,8 +104,8 @@ export type Database = {
           location?: string
           time?: string | null
           title?: string
+          waiver_id?: string | null
           waiver_required?: boolean
-          waiver_url?: string | null
         }
         Relationships: []
       }
@@ -176,6 +190,20 @@ export type Database = {
             foreignKeyName: "volunteer_hours_event_id_fkey"
             columns: ["event_id"]
             isOneToOne: false
+            referencedRelation: "event_images"
+            referencedColumns: ["event_id"]
+          },
+          {
+            foreignKeyName: "volunteer_hours_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "event_waivers"
+            referencedColumns: ["event_id"]
+          },
+          {
+            foreignKeyName: "volunteer_hours_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
             referencedRelation: "events"
             referencedColumns: ["id"]
           },
@@ -217,7 +245,26 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      event_images: {
+        Row: {
+          bucket_id: string | null
+          date: string | null
+          event_id: string | null
+          image_id: string | null
+          image_path: string | null
+        }
+        Relationships: []
+      }
+      event_waivers: {
+        Row: {
+          bucket_id: string | null
+          date: string | null
+          event_id: string | null
+          waiver_id: string | null
+          waiver_path: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       bytea_to_text: {
@@ -239,10 +286,19 @@ export type Database = {
       get_events_with_images: {
         Args: Record<PropertyKey, never>
         Returns: {
-          id: string
-          title: string
           date: string
+          id: string
           image_url: string
+          title: string
+        }[]
+      }
+      get_expired_waivers: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          bucket_id: string
+          event_id: string
+          waiver_id: string
+          waiver_path: string
         }[]
       }
       http: {
@@ -251,12 +307,12 @@ export type Database = {
       }
       http_delete: {
         Args:
+          | { content: string; content_type: string; uri: string }
           | { uri: string }
-          | { uri: string; content: string; content_type: string }
         Returns: Database["public"]["CompositeTypes"]["http_response"]
       }
       http_get: {
-        Args: { uri: string } | { uri: string; data: Json }
+        Args: { data: Json; uri: string } | { uri: string }
         Returns: Database["public"]["CompositeTypes"]["http_response"]
       }
       http_head: {
@@ -275,17 +331,17 @@ export type Database = {
         }[]
       }
       http_patch: {
-        Args: { uri: string; content: string; content_type: string }
+        Args: { content: string; content_type: string; uri: string }
         Returns: Database["public"]["CompositeTypes"]["http_response"]
       }
       http_post: {
         Args:
-          | { uri: string; content: string; content_type: string }
-          | { uri: string; data: Json }
+          | { content: string; content_type: string; uri: string }
+          | { data: Json; uri: string }
         Returns: Database["public"]["CompositeTypes"]["http_response"]
       }
       http_put: {
-        Args: { uri: string; content: string; content_type: string }
+        Args: { content: string; content_type: string; uri: string }
         Returns: Database["public"]["CompositeTypes"]["http_response"]
       }
       http_reset_curlopt: {

@@ -1,6 +1,6 @@
 import Hero from "~/components/Hero";
 import StatsCounter from "~/components/StatsCounter";
-import FeaturedEvent from "~/components/FeaturedEvent";
+import FeaturedEventCard from "~/components/FeaturedEventCard";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import InfoImpactSection from "~/components/InfoImpactSection";
@@ -70,7 +70,7 @@ const Home = () => {
           <p className="text-[#6c7358] mb-8">
             These aren’t just events — they’re movements creating lasting change.
           </p>
-          <FeaturedEvent />
+          <FeaturedEventCard />
           <Link
             to="/initiatives"
             className="inline-block mt-8 bg-[#6b7547] text-white px-6 py-3 rounded-full hover:bg-[#525c32] transition shadow-lg hover:scale-105"

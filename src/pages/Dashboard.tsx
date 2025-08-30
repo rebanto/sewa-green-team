@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "~/lib/supabase";
 import { useAuth } from "~/context/auth/AuthContext";
@@ -14,7 +14,7 @@ import {
   Legend,
 } from "recharts";
 
-import { fadeUp } from "~/constants/animations";
+import { fadeUp, staggerContainer } from "~/constants/animations";
 import Modal from "~/components/ui/Modal";
 import type {
   User,
@@ -22,23 +22,19 @@ import type {
   VolunteerHoursWithEvent,
   GraphPeriod,
   ChartDataPoint,
-  EventWithImageUrl,
+  Event,
 } from "~/types";
 import { Calendar, Clock, MapPin, FileText } from "lucide-react";
-
-const staggerContainer = {
-  show: { transition: { staggerChildren: 0.1 } },
-  hidden: {},
-};
+import useEvents from "~/hooks/useEvents";
 
 const Dashboard = () => {
   const { user: authUser, signOut, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(true);
   const [userData, setUserData] = useState<User | null>(null);
-  const [events, setEvents] = useState<EventWithImageUrl[]>([]);
+  const { events, loading: eventLoading, error: eventError } = useEvents();
   const [userSignups, setUserSignups] = useState<Record<string, EventSignup>>({});
   const [signupLoading, setSignupLoading] = useState<string | null>(null);
-  const [selectedEvent, setSelectedEvent] = useState<EventWithImageUrl | null>(null);
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [showEventModal, setShowEventModal] = useState(false);
   const [volunteerHours, setVolunteerHours] = useState<VolunteerHoursWithEvent[]>([]);
   const [totalHours, setTotalHours] = useState(0);
@@ -46,6 +42,21 @@ const Dashboard = () => {
   const [graphData, setGraphData] = useState<ChartDataPoint[]>([]);
 
   const navigate = useNavigate();
+  const navigateRef = useRef(navigate);
+  navigateRef.current = navigate;
+
+  // Handle event loading and error states in useEffect to prevent infinite re-renders
+  useEffect(() => {
+    if (eventLoading) {
+      setLoading(true);
+    }
+  }, [eventLoading]);
+
+  useEffect(() => {
+    if (eventError) {
+      throw eventError;
+    }
+  }, [eventError]);
 
   const formatDate = (dateStr: string) => {
     if (!dateStr) return "No date";
@@ -57,10 +68,10 @@ const Dashboard = () => {
     }).format(date);
   };
 
-  const handleLogout = async () => {
+  const handleLogout = useCallback(async () => {
     navigate("/");
     await signOut();
-  };
+  }, [navigate, signOut]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -76,63 +87,15 @@ const Dashboard = () => {
         .eq("id", authUser.id)
         .single();
 
-      if (userError || !userInfo) return navigate("/get-involved?login=true");
-      if (userInfo.status !== "APPROVED") return navigate("/not-approved");
-      setUserData(userInfo as User);
-
-      // Get all files once to avoid repeated API calls
-      try {
-        // Get all events
-        const { data: eventData, error: eventError } = await supabase
-          .from("events")
-          .select("*")
-          .order("date", { ascending: true });
-
-        if (eventError) throw eventError;
-
-        if (!eventData || eventData.length === 0) {
-          setEvents([]);
-          return;
-        }
-
-        // Get all images from storage
-        const { data: allImages, error: imageError } = await supabase.storage
-          .from("events")
-          .list("images", { limit: 1000 });
-
-        if (imageError) throw imageError;
-
-        // Create image map for efficient lookup
-        const imageMap = new Map(allImages.map((image) => [image.id, image]));
-
-        // Merge events with their corresponding images
-        const eventsWithImages = eventData.map((event) => {
-          if (!event.image_id || !imageMap.has(event.image_id)) {
-            return {
-              ...event,
-              image: null,
-              imageUrl: null,
-            };
-          }
-
-          const image = imageMap.get(event.image_id) || null;
-          const {
-            data: { publicUrl },
-          } = supabase.storage.from("events/images").getPublicUrl(image!.name);
-
-          return {
-            ...event,
-            image,
-            imageUrl: publicUrl,
-          };
-        });
-
-        // console.log("Events with images:", eventsWithImages);
-        setEvents(eventsWithImages || []);
-      } catch (error) {
-        console.error("Error fetching events with images:", error);
-        setEvents([]);
+      if (userError || !userInfo) {
+        console.error("User data fetch failed:", userError);
+        return;
       }
+      if (userInfo.status !== "APPROVED") {
+        console.error("User not approved");
+        return;
+      }
+      setUserData(userInfo as User);
 
       const { data: signups } = await supabase
         .from("event_signups")
@@ -163,7 +126,7 @@ const Dashboard = () => {
       setLoading(false);
     };
     fetchData();
-  }, [authUser, authLoading, navigate]);
+  }, [authUser, authLoading]);
 
   // Update graph when period or data changes
   useEffect(() => {
@@ -244,27 +207,11 @@ const Dashboard = () => {
   };
 
   const todayStr = new Date().toISOString().split("T")[0];
-  const upcomingEvents = events.filter((ev) => ev.date >= todayStr);
-  const pastEvents = events.filter((ev) => ev.date < todayStr);
-
-  // Show loading while auth is being resolved
-  if (authLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#8a9663] mx-auto mb-4"></div>
-          <p className="text-[#6b7547] font-medium">Loading...</p>
-        </div>
-      </div>
-    );
-  }
+  const upcomingEvents = events?.filter((ev) => ev.date >= todayStr);
+  const pastEvents = events?.filter((ev) => ev.date < todayStr);
 
   if (loading)
-    return (
-      <div className="py-32 text-center text-xl text-[#6b7547] font-semibold">
-        Loading dashboard...
-      </div>
-    );
+    return <div className="py-32 text-center text-xl text-[#4d5640]">Loading dashboard...</div>;
 
   return (
     <motion.div
@@ -375,7 +322,7 @@ const Dashboard = () => {
               Upcoming Events
             </h2>
             <ul className="space-y-4">
-              {upcomingEvents.map((event) => {
+              {upcomingEvents?.map((event) => {
                 const signedUp = !!userSignups[event.id];
 
                 return (
@@ -390,7 +337,7 @@ const Dashboard = () => {
                       <p className="text-sm text-[#c27d50] font-medium">
                         {formatDate(event.date)} {event.time && `at ${event.time}`}
                       </p>
-                      <p className="text-sm text-[#c27d50] font-medium">{event.location}</p>
+                      <p className="text-sm text-[#6b7f46]">{event.location}</p>
                       {event.waiver_required && event.waiver_url && event.date >= todayStr && (
                         <>
                           <p className="text-xs mt-1 px-3 py-1 bg-red-100 text-red-700 rounded-full font-semibold w-fit">
@@ -399,7 +346,7 @@ const Dashboard = () => {
                           <p className="text-xs mt-1 text-red-700 font-semibold">
                             This event requires a signed waiver.{" "}
                             <a
-                              href={event.waiver_url}
+                              href={event.waiver_id || ""}
                               download
                               className="underline text-blue-700"
                               aria-label={`Download waiver PDF for ${event.title}`}
@@ -463,7 +410,7 @@ const Dashboard = () => {
               Past Events
             </h2>
             <ul className="text-[#c27d50] space-y-2">
-              {pastEvents.map((ev) => (
+              {pastEvents?.map((ev) => (
                 <li
                   key={ev.id}
                   className="text-sm font-medium bg-[#f4f3ec]/50 p-3 rounded-lg border border-[#cdd1bc]/30"
@@ -541,7 +488,7 @@ const EventModalContent = ({
   selectedEvent,
   formatDate,
 }: {
-  selectedEvent: EventWithImageUrl;
+  selectedEvent: Event;
   formatDate: (dateStr: string, timeStr?: string) => string;
 }) => {
   const isUpcomingEvent = selectedEvent.date >= new Date().toISOString().split("T")[0];
@@ -552,7 +499,7 @@ const EventModalContent = ({
       {selectedEvent.image && (
         <div className="relative w-full h-64 rounded-xl overflow-hidden shadow-lg">
           <img
-            src={selectedEvent.imageUrl || ""}
+            src={selectedEvent.image_url || ""}
             alt={selectedEvent.title}
             className="w-full h-full object-cover"
           />
