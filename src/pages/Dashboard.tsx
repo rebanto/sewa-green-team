@@ -428,7 +428,7 @@ const Dashboard = () => {
             className="bg-gradient-to-br from-white via-[#f9f8f4] to-[#f4f3ec] rounded-3xl p-8 shadow-2xl border border-[#cdd1bc] backdrop-blur-sm"
           >
             <h2 className="text-2xl sm:text-3xl font-extrabold text-[#6b7547] mb-6 drop-shadow-sm">
-              Volunteer Hours (Detailed)
+              Volunteer Hours
             </h2>
             {volunteerHours.length === 0 ? (
               <p className="text-[#c27d50] italic font-medium">No volunteer hours recorded yet.</p>
