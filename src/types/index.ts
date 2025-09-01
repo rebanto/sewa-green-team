@@ -1,5 +1,4 @@
 import React from "react";
-import type { FileObject } from "@supabase/storage-js";
 import type { Enums, Tables } from "@/supabase.types";
 
 // Re-export Supabase types with more convenient names
@@ -15,7 +14,6 @@ export type ApprovalStatus = Enums<"approval_status">;
 
 // Export image
 export type Event = _RawTableEvent & {
-  image: FileObject | null;
   image_url: string | null;
   waiver_url: string | null;
 };

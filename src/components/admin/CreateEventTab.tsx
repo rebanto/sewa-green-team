@@ -242,7 +242,6 @@ const CreateEventTab = ({
                     waiver_required: false,
                     waiver_id: null,
                     image_id: null,
-                    image: null,
                     image_url: null,
                     waiver_url: null,
                   })

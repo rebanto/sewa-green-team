@@ -63,7 +63,6 @@ const AdminPanel = () => {
     waiver_required: false,
     waiver_id: null,
     image_id: null,
-    image: null,
     image_url: null,
     waiver_url: null,
   });
@@ -196,17 +195,19 @@ const AdminPanel = () => {
       alert("You must upload a waiver PDF for this event.");
       return;
     }
+
+    let waiver_id;
+
     if (eventForm.waiver_required && waiverFile) {
       // Upload to Supabase Storage
       const fileName = `${Date.now()}_${waiverFile.name}`;
       const { data: uploadData, error } = await supabase.storage
-        .from("waivers")
-        .upload(fileName, waiverFile, { upsert: true });
+        .from("events")
+        .upload(`waivers/${fileName}`, waiverFile, { upsert: true });
       if (error) return alert("Failed to upload waiver PDF: " + error.message);
 
       // Store the file ID in waiver_id for database
-      const waiver_id = uploadData?.id || fileName;
-      waiver_url = waiver_id; // This will be used to construct the URL later
+      waiver_id = uploadData?.id || fileName;
     }
 
     if (imageFile) {
@@ -230,7 +231,7 @@ const AdminPanel = () => {
       location: eventForm.location,
       waiver_required: eventForm.waiver_required,
       image_id: image_id || null, // Convert empty string to null for database
-      waiver_id: eventForm.waiver_required && waiver_url ? waiver_url : null, // Store file ID in waiver_id
+      waiver_id: eventForm.waiver_required && waiver_id ? waiver_id : null, // Store file ID in waiver_id
     };
 
     if (eventId && eventId !== "") {
@@ -258,7 +259,6 @@ const AdminPanel = () => {
       waiver_required: false,
       waiver_id: null,
       image_id: null,
-      image: null,
       image_url: null,
       waiver_url: null,
     });
@@ -290,7 +290,6 @@ const AdminPanel = () => {
       waiver_required: event.waiver_required,
       waiver_id: event.waiver_id ?? null,
       image_id: event.image_id ?? null,
-      image: null,
       image_url: event.image_url ?? null,
       waiver_url: event.waiver_url ?? null,
     });
