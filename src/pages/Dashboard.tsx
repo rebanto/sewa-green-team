@@ -346,8 +346,9 @@ const Dashboard = () => {
                           <p className="text-xs mt-1 text-red-700 font-semibold">
                             This event requires a signed waiver.{" "}
                             <a
-                              href={event.waiver_id || ""}
+                              href={event.waiver_url || ""}
                               download
+                              target="_blank"
                               className="underline text-blue-700"
                               aria-label={`Download waiver PDF for ${event.title}`}
                               title={`Download waiver PDF for ${event.title}`}
@@ -496,7 +497,7 @@ const EventModalContent = ({
   return (
     <div className="space-y-4 sm:space-y-6">
       {/* Event Image */}
-      {selectedEvent.image && (
+      {selectedEvent.image_id && (
         <div className="relative w-full h-64 rounded-xl overflow-hidden shadow-lg">
           <img
             src={selectedEvent.image_url || ""}
@@ -552,6 +553,7 @@ const EventModalContent = ({
                 <a
                   href={selectedEvent.waiver_url}
                   download
+                  target="_blank"
                   className="inline-flex items-center gap-2 text-sm font-semibold text-[#c27d50] hover:text-[#a46336] bg-white px-3 py-2 rounded-lg border border-[#cdd1bc] hover:shadow-md transition-all duration-200"
                 >
                   <FileText size={16} />

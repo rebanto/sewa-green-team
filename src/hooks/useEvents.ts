@@ -58,7 +58,6 @@ export default function useEvents() {
       const eventsWithUrls = eventData.map((event) => {
         const tmp: Event = {
           ...event,
-          image: null,
           image_url: null,
           waiver_url: null,
         };
