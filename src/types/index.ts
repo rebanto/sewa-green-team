@@ -46,6 +46,15 @@ export interface HoursUser {
   email: string;
 }
 
+export interface VolunteerHoursModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  event: Event | null;
+  users: HoursUser[];
+  onSave: (hoursData: { [userId: string]: number }) => Promise<void>;
+  isLoading?: boolean;
+}
+
 export interface SignedUpUser {
   id: string;
   status: string | null;

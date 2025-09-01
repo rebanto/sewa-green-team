@@ -4,6 +4,7 @@ import { Clock, Users, Save } from "lucide-react";
 import Modal from "~/components/ui/Modal";
 import { userCardVariants } from "~/constants/animations";
 import type { VolunteerHoursModalProps } from "~/types";
+import type { HoursUser } from "~/types";
 
 const VolunteerHoursModal = ({
   isOpen,
@@ -51,7 +52,7 @@ const VolunteerHoursModal = ({
     }
 
     const newData: { [userId: string]: number } = {};
-    users.forEach((user) => {
+  users.forEach((user: HoursUser) => {
       newData[user.id] = numValue;
     });
     setHoursData(newData);
@@ -140,7 +141,7 @@ const VolunteerHoursModal = ({
                 Individual Hours ({users.length} volunteers)
               </h4>
               <div className="max-h-64 overflow-y-auto space-y-3 border border-[#cdd1bc]/30 rounded-lg p-4">
-                {users.map((user) => (
+                {users.map((user: HoursUser) => (
                   <motion.div
                     key={user.id}
                     className="flex items-center gap-4 p-3 bg-white rounded-lg border border-[#cdd1bc]/30"
