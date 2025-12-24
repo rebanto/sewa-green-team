@@ -11,7 +11,6 @@ const UserCard = ({
   onToggleExpand,
   actions = [],
   showStatus = false,
-  showLeadId = true,
   className = "",
 }: UserCardProps) => {
   const renderExpandedContent = () =>
@@ -77,7 +76,6 @@ const UserCard = ({
                 Status: <StatusBadge status={user.status} />
               </p>
             )}
-            {showLeadId && <p>Lead ID: {user.lead_id}</p>}
           </div>
         </div>
         <button

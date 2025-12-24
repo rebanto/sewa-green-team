@@ -21,7 +21,6 @@ const GetInvolved = () => {
     email: "",
     password: "",
     phone: "",
-    lead_id: "",
     role: "STUDENT" as UserRole,
     parent_1_name: "",
     parent_1_email: "",
@@ -105,7 +104,6 @@ const GetInvolved = () => {
             full_name: formData.full_name,
             email: formData.email,
             phone: formData.phone || null,
-            lead_id: formData.lead_id,
             role: formData.role,
             parent_1_name: formData.role === "STUDENT" ? formData.parent_1_name || null : null,
             parent_1_email: formData.role === "STUDENT" ? formData.parent_1_email || null : null,
@@ -178,7 +176,6 @@ const GetInvolved = () => {
         full_name: formData.full_name,
         email: formData.email,
         phone: formData.phone || null,
-        lead_id: formData.lead_id,
         role: formData.role,
         parent_1_name: formData.role === "STUDENT" ? formData.parent_1_name || null : null,
         parent_1_email: formData.role === "STUDENT" ? formData.parent_1_email || null : null,
@@ -304,17 +301,6 @@ const GetInvolved = () => {
                 className="formInput"
               />
 
-              <label className="block font-medium mb-1" htmlFor="lead_id">
-                Lead ID <span className="text-red-500">*</span>
-              </label>
-              <input
-                id="lead_id"
-                name="lead_id"
-                onChange={handleChange}
-                value={formData.lead_id}
-                required
-                className="formInput"
-              />
 
               <AnimatePresence>
                 {formData.role === "STUDENT" && (

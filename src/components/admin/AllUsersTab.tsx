@@ -80,7 +80,6 @@ const AllUsersTab = ({
               isExpanded={expandedUserId === user.id}
               onToggleExpand={toggleExpand}
               showStatus={true}
-              showLeadId={true}
             />
           ))
         )}
