@@ -18,6 +18,7 @@ const AllUsersTab = ({
   toggleExpand,
   copyToClipboard,
   generateBulkList,
+  updateUserRole,
 }: AllUsersTabProps) => (
   <>
     <div className="mb-8">
@@ -80,6 +81,7 @@ const AllUsersTab = ({
               isExpanded={expandedUserId === user.id}
               onToggleExpand={toggleExpand}
               showStatus={true}
+              onUpdateRole={updateUserRole}
             />
           ))
         )}

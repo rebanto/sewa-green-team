@@ -77,6 +77,7 @@ export interface UserCardProps {
   actions?: UserCardAction[];
   showStatus?: boolean;
   className?: string;
+  onUpdateRole?: (id: string, role: string) => Promise<void>;
 }
 
 // Legacy alias for WebsiteDetails (for backward compatibility)
@@ -107,6 +108,7 @@ export interface AllUsersTabProps {
   toggleExpand: (id: string) => void;
   copyToClipboard: (text: string) => void;
   generateBulkList: (type: "email" | "phone") => string;
+  updateUserRole?: (id: string, role: string) => Promise<void>;
 }
 
 export interface PendingUsersTabProps {

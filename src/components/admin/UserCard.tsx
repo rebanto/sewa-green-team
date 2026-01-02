@@ -12,6 +12,7 @@ const UserCard = ({
   actions = [],
   showStatus = false,
   className = "",
+  onUpdateRole,
 }: UserCardProps) => {
   const renderExpandedContent = () =>
     user.parent_1_name || user.parent_2_name ? (
@@ -23,8 +24,8 @@ const UserCard = ({
                 <span className="font-semibold">Parent 1: </span>
                 {`${user.parent_1_name}
             ${wrap([user.parent_1_email, user.parent_1_phone].filter(Boolean).join(", "))
-              .prepend("(")
-              .append(")")}`}
+                    .prepend("(")
+                    .append(")")}`}
               </p>
             )}
             {user.parent_2_name && (
@@ -32,8 +33,8 @@ const UserCard = ({
                 <span className="font-semibold">Parent 2: </span>
                 {`${user.parent_2_name}
             ${wrap([user.parent_2_email, user.parent_2_phone].filter(Boolean).join(", "))
-              .prepend("(")
-              .append(")")}`}
+                    .prepend("(")
+                    .append(")")}`}
               </p>
             )}
           </>
@@ -70,7 +71,35 @@ const UserCard = ({
           <div className="text-sm text-[#c27d50] space-y-1 font-medium">
             <p>Email: {user.email}</p>
             <p>Phone: {user.phone}</p>
-            <p>Role: {user.role}</p>
+            {onUpdateRole ? (
+              <div className="flex items-center gap-2">
+                <span className="min-w-fit">Role:</span>
+                <div className="relative inline-block">
+                  <select
+                    value={user.role}
+                    onChange={(e) => {
+                      const newRole = e.target.value;
+                      if (window.confirm(`Are you sure you want to change role to ${newRole}?`)) {
+                        onUpdateRole(user.id, newRole);
+                      }
+                    }}
+                    className="bg-transparent border-b border-[#c27d50] text-[#c27d50] font-medium focus:outline-none focus:border-[#6b7547] cursor-pointer appearance-none pr-8 py-0 leading-none h-auto w-auto"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <option value="STUDENT">STUDENT</option>
+                    <option value="PARENT">PARENT</option>
+                    <option value="ADMIN">ADMIN</option>
+                    <option value="PENDING">PENDING</option>
+                  </select>
+                  <ChevronDown
+                    size={14}
+                    className="absolute right-0 top-1/2 -translate-y-1/2 text-[#c27d50] pointer-events-none"
+                  />
+                </div>
+              </div>
+            ) : (
+              <p>Role: {user.role}</p>
+            )}
             {showStatus && (
               <p>
                 Status: <StatusBadge status={user.status} />
