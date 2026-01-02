@@ -73,7 +73,6 @@ const PendingUsersTab = ({
             isExpanded={expandedUserId === user.id}
             onToggleExpand={toggleExpand}
             showStatus={false}
-            showLeadId={true}
             actions={[
               {
                 label: "Approve",

@@ -76,7 +76,6 @@ export interface UserCardProps {
   onToggleExpand: (id: string) => void;
   actions?: UserCardAction[];
   showStatus?: boolean;
-  showLeadId?: boolean;
   className?: string;
 }
 
@@ -170,7 +169,6 @@ export interface UserFormData {
   role: UserRole;
   full_name: string;
   phone: string;
-  lead_id: string;
   email: string;
   password: string;
 

@@ -83,7 +83,7 @@ const Dashboard = () => {
 
       const { data: userInfo, error: userError } = await supabase
         .from("users")
-        .select("status, full_name, role, id, email, phone, lead_id, email_confirmed")
+        .select("status, full_name, role, id, email, phone, email_confirmed")
         .eq("id", authUser.id)
         .single();
 

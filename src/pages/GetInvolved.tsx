@@ -21,7 +21,6 @@ const GetInvolved = () => {
     email: "",
     password: "",
     phone: "",
-    lead_id: "",
     role: "STUDENT" as UserRole,
     parent_1_name: "",
     parent_1_email: "",
@@ -98,14 +97,16 @@ const GetInvolved = () => {
           return;
         }
 
+        let shouldAutoApprove = false;
+        
         if (!userRow) {
           // Insert user into users table with all info
           const insertPayload = {
             id: user.id,
+            lead_id: user.id, // Use user's own ID as lead_id initially
             full_name: formData.full_name,
             email: formData.email,
             phone: formData.phone || null,
-            lead_id: formData.lead_id,
             role: formData.role,
             parent_1_name: formData.role === "STUDENT" ? formData.parent_1_name || null : null,
             parent_1_email: formData.role === "STUDENT" ? formData.parent_1_email || null : null,
@@ -120,6 +121,8 @@ const GetInvolved = () => {
             alert(dbError.message);
             return;
           }
+          // User was just inserted with PENDING status, so we should auto-approve
+          shouldAutoApprove = true;
         }
 
         if (!user.email_confirmed_at) {
@@ -128,14 +131,28 @@ const GetInvolved = () => {
           return;
         }
 
-        // Update email_confirmed in users table if not already true
-        await supabase
+        // Update email_confirmed in users table and automatically approve the user if they were pending
+        // Only auto-approve if status is PENDING (preserve APPROVED/REJECTED statuses)
+        const updatePayload: { email_confirmed: boolean; status?: "APPROVED" } = {
+          email_confirmed: true,
+        };
+        
+        // Automatically approve if user is currently pending or was just inserted
+        if (shouldAutoApprove || userRow?.status === "PENDING") {
+          updatePayload.status = "APPROVED";
+        }
+        
+        const { data: updatedUser } = await supabase
           .from("users")
-          .update({ email_confirmed: true })
+          .update(updatePayload)
           .eq("id", user.id)
-          .eq("email_confirmed", false);
+          .select()
+          .single();
 
-        if (userRow?.status === "APPROVED") {
+        // Use the updated user data or fall back to the fetched userRow
+        const finalUserStatus = updatedUser?.status || userRow?.status;
+        
+        if (finalUserStatus === "APPROVED") {
           navigate("/dashboard");
         } else {
           navigate("/not-approved");
@@ -175,10 +192,10 @@ const GetInvolved = () => {
 
       const insertPayload = {
         id: data.user.id,
+        lead_id: data.user.id, // Use user's own ID as lead_id initially
         full_name: formData.full_name,
         email: formData.email,
         phone: formData.phone || null,
-        lead_id: formData.lead_id,
         role: formData.role,
         parent_1_name: formData.role === "STUDENT" ? formData.parent_1_name || null : null,
         parent_1_email: formData.role === "STUDENT" ? formData.parent_1_email || null : null,
@@ -198,7 +215,7 @@ const GetInvolved = () => {
       }
 
       alert(
-        "Registration successful! Please check your inbox to verify your email. You will be able to log in after an admin approves your account.",
+        "Registration successful! Please check your inbox to verify your email. Once you confirm your email, you'll be able to log in immediately.",
       );
       navigate("/get-involved?login=true");
     }
@@ -304,17 +321,6 @@ const GetInvolved = () => {
                 className="formInput"
               />
 
-              <label className="block font-medium mb-1" htmlFor="lead_id">
-                Lead ID <span className="text-red-500">*</span>
-              </label>
-              <input
-                id="lead_id"
-                name="lead_id"
-                onChange={handleChange}
-                value={formData.lead_id}
-                required
-                className="formInput"
-              />
 
               <AnimatePresence>
                 {formData.role === "STUDENT" && (
