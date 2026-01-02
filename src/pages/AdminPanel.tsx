@@ -359,6 +359,27 @@ const AdminPanel = () => {
       </div>
     );
 
+  // Update user role
+  const updateUserRole = async (id: string, newRole: string) => {
+    // Only allow valid database roles
+    const validRoles = ["STUDENT", "PARENT", "ADMIN", "PENDING"];
+    if (!validRoles.includes(newRole)) {
+      alert(`Invalid role: ${newRole}`);
+      return;
+    }
+
+    const { error } = await supabase.from("users").update({ role: newRole as any }).eq("id", id);
+    if (error) {
+      alert(`Error updating user role: ${error.message}`);
+      return;
+    }
+
+    // Update local state
+    setAllUsers((prev) =>
+      prev.map((u) => (u.id === id ? { ...u, role: newRole as any } : u))
+    );
+  };
+
   return (
     <motion.div
       initial="hidden"
@@ -435,6 +456,7 @@ const AdminPanel = () => {
               toggleExpand={toggleExpand}
               copyToClipboard={copyToClipboard}
               generateBulkList={generateBulkList}
+              updateUserRole={updateUserRole}
             />
           )}
           {activeTab === "Create Event" && (

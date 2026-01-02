@@ -48,7 +48,7 @@ const GetInvolved = () => {
       type: "signup",
       email: formData.email,
       options: {
-        emailRedirectTo: `${window.location.origin}/get-involved?login=true`,
+        emailRedirectTo: `https://sewa-green-team.vercel.app/get-involved?login=true/get-involved?login=true`,
       },
     });
     setResendLoading(false);
@@ -98,7 +98,7 @@ const GetInvolved = () => {
         }
 
         let shouldAutoApprove = false;
-        
+
         if (!userRow) {
           // Insert user into users table with all info
           const insertPayload = {
@@ -136,12 +136,12 @@ const GetInvolved = () => {
         const updatePayload: { email_confirmed: boolean; status?: "APPROVED" } = {
           email_confirmed: true,
         };
-        
+
         // Automatically approve if user is currently pending or was just inserted
         if (shouldAutoApprove || userRow?.status === "PENDING") {
           updatePayload.status = "APPROVED";
         }
-        
+
         const { data: updatedUser } = await supabase
           .from("users")
           .update(updatePayload)
@@ -151,7 +151,7 @@ const GetInvolved = () => {
 
         // Use the updated user data or fall back to the fetched userRow
         const finalUserStatus = updatedUser?.status || userRow?.status;
-        
+
         if (finalUserStatus === "APPROVED") {
           navigate("/dashboard");
         } else {

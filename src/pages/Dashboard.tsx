@@ -69,8 +69,8 @@ const Dashboard = () => {
   };
 
   const handleLogout = useCallback(async () => {
-    navigate("/");
     await signOut();
+    navigate("/");
   }, [navigate, signOut]);
 
   useEffect(() => {

@@ -1,4 +1,10 @@
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "~/context/auth/AuthContext";
+
 const NotApproved = () => {
+  const { signOut } = useAuth();
+  const navigate = useNavigate();
+
   return (
     <div className="min-h-screen flex items-center justify-center p-6">
       <div className="bg-white/90 border border-[#cdd1bc] p-10 rounded-xl shadow-lg max-w-md text-center">
@@ -18,8 +24,8 @@ const NotApproved = () => {
         <button
           type="button"
           onClick={async () => {
-            await import("../lib/supabase").then(({ supabase }) => supabase.auth.signOut());
-            window.location.href = "/";
+            await signOut();
+            navigate("/");
           }}
           className="inline-block ml-4 px-6 py-2 bg-red-500 text-white rounded-full font-semibold hover:bg-red-600 transition"
           aria-label="Log out of account"
